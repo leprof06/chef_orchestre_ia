@@ -1,4 +1,4 @@
-# 🤖 Chef d'Orchestre IA
+# 🧠 Chef d'Orchestre IA
 
 Une IA locale modulaire capable de recevoir des instructions en langage naturel, de créer automatiquement des agents spécialisés (code, test, doc...), et d'opérer dans un environnement 100% local (avec option OpenAI ou HuggingFace).
 
@@ -9,11 +9,10 @@ Une IA locale modulaire capable de recevoir des instructions en langage naturel,
 - 💬 Instructions en langage naturel
 - 🧠 Création automatique d'agents via `RHAgent`
 - 🛠 Agents spécialisés : code, test, debug, doc, UX, etc.
-- 🔁 Réutilisation de code existant avec GitHub
+- ♻️ Réutilisation de code existant avec GitHub
 - 📄 Rapport de santé global du projet avec `ProjectDoctorAgent`
-- 🧪 Tests automatisés
+- 🤪 Tests automatisés
 - 🔐 Fonctionnement local sans dépendre du cloud (optionnel)
-- 🧩 Interface web avec des routes dynamiques pour chat, analyse, auto-fix, etc.
 
 ---
 
@@ -41,35 +40,40 @@ chef_orchestre_ia/
 │   ├── reuse_code_agent.py
 │   └── project_doctor_agent.py
 ├── doctor_modules/
-│   ├── core/
-│   ├── analysis/
-│   ├── tools/
-│   ├── routes/
-│   └── templates/
-├── frontend/
-│   └── index.html
-├── backend/
-│   └── routes/
-│       ├── __init__.py
-│       ├── routes_chat.py
-│       ├── routes_deep_analysis.py
-│       ├── routes_analyze_full.py
-│       ├── routes_auto_fix.py
-│       ├── routes_auto_fix_combined.py
-│       ├── routes_capabilities.py
-│       ├── routes_feedback.py
-│       └── routes_proxy.py
-└── test/
-    └── test_api_routes.py
+│   └── ... (analyse et auto-fix)
+├── frontend/index.html
+├── backend/routes.py
+└── test/test_api_routes.py
 ```
 
 ---
 
-## 🧪 Lancement
+## 🤪 Lancement
 
 ```bash
 pip install -r requirements.txt
-python -m backend.routes
+```
+
+### 🎮 Lancement via le Chef d'Orchestre
+
+Depuis la racine du projet :
+
+```bash
+python orchestrator.py
+```
+
+Ou en ajoutant le chemin au PYTHONPATH :
+
+```bash
+PYTHONPATH=. python orchestrator.py
+```
+
+Vous pouvez ensuite envoyer des consignes en langage naturel, par exemple :
+
+```text
+Corrige tous les fichiers Python dans le projet
+Génère un test unitaire pour le module optimize_agent
+Crée un nouvel agent pour analyser les dépendances de sécurité
 ```
 
 ---
