@@ -1,58 +1,103 @@
-# Chef Orchestre IA
+# 🤖 Chef d'Orchestre IA
 
-Un système modulaire en Python orchestré par une IA centrale (ChefOrchestreAgent) qui délègue automatiquement des tâches à des agents spécialisés : génération de code, tests, documentation, debug, ergonomie, réutilisation de code GitHub, etc.
+Une IA locale modulaire capable de recevoir des instructions en langage naturel, de créer automatiquement des agents spécialisés (code, test, doc...), et d'opérer dans un environnement 100% local (avec option OpenAI ou HuggingFace).
 
-## 🧠 Fonctionnement général
+---
 
-1. L'utilisateur donne une consigne en langage naturel.
-2. Le ChefOrchestre analyse la tâche.
-3. Il répartit les sous-tâches aux bons agents.
-4. Chaque agent travaille, retourne son résultat.
-5. Le chef compile les retours et fournit une sortie complète.
+## 🚀 Fonctionnalités principales
 
-## 🤖 Agents disponibles
+- 💬 Instructions en langage naturel
+- 🧠 Création automatique d'agents via `RHAgent`
+- 🛠 Agents spécialisés : code, test, debug, doc, UX, etc.
+- 🔁 Réutilisation de code existant avec GitHub
+- 📄 Rapport de santé global du projet avec `ProjectDoctorAgent`
+- 🧪 Tests automatisés
+- 🔐 Fonctionnement local sans dépendre du cloud (optionnel)
 
-- `CodeAgent` : génère du code Python
-- `TestAgent` : crée des tests unitaires
-- `DebugAgent` : corrige des bugs
-- `DocAgent` : génère des README/docs
-- `OptimizeAgent` : améliore le code
-- `APILiaisonAgent` : vérifie la cohérence API front/back
-- `UXAgent` : propose des améliorations UI/UX
-- `DataAnalysisAgent` : analyse des jeux de données
-- `RHAgent` : crée de nouveaux agents si besoin
-- `ReuseCodeAgent` : recherche du code libre existant sur GitHub
+---
 
-## 🔧 Structure du projet
+## 🧱 Architecture
 
 ```
 chef_orchestre_ia/
 ├── orchestrator.py
 ├── config.py
-├── workspace/
-├── agents/
-│   ├── code_agent.py, test_agent.py, ...
-├── backend/routes.py
-├── frontend/index.html
-├── test/test_api_routes.py
+├── config_logger.py
+├── .env
 ├── requirements.txt
-└── README.md
+├── agents/
+│   ├── base_agent.py
+│   ├── chef_agent.py
+│   ├── code_agent.py
+│   ├── rh_agent.py
+│   ├── test_agent.py
+│   ├── debug_agent.py
+│   ├── doc_agent.py
+│   ├── optimize_agent.py
+│   ├── ux_agent.py
+│   ├── data_analysis_agent.py
+│   ├── api_liaison_agent.py
+│   ├── reuse_code_agent.py
+│   └── project_doctor_agent.py
+├── doctor_modules/
+│   └── ... (analyse et auto-fix)
+├── frontend/index.html
+├── backend/routes.py
+└── test/test_api_routes.py
 ```
 
-## 🗝️ Configuration API
+---
 
-Dans `config.py`, renseignez :
+## 🧪 Lancement
+
+```bash
+pip install -r requirements.txt
+python orchestrator.py
+```
+
+---
+
+## 🔑 Configuration des clés API
+
+Créez un fichier `.env` à la racine :
+
+```
+OPENAI_API_KEY=sk-...
+HUGGINGFACE_API_KEY=hf_...
+```
+
+Dans `config.py`, les options à activer :
 ```python
 CONFIG = {
     "use_openai": True,
-    "api_key_openai": "sk-...",
+    "use_huggingface": False,
     ...
 }
 ```
 
-## ▶️ Lancement (mode API Flask)
+---
+
+## 📦 Stub réseau local
+
+Si vous souhaitez simuler les appels réseau sans accès Internet :
 ```bash
-pip install -r requirements.txt
-python backend/routes.py
+export USE_REQUESTS_STUB=1
 ```
-Puis allez sur `http://localhost:5000` ou utilisez l'interface HTML (`frontend/index.html`).
+
+Prévoir un fichier `requests_stub.py` dans le projet si nécessaire.
+
+---
+
+## 🧠 Exemple de commande utilisateur
+
+> "Corrige tous les fichiers Python dans le projet"
+
+> "Génère un test unitaire pour le module optimize_agent"
+
+> "Crée un nouvel agent pour analyser les dépendances de sécurité"
+
+---
+
+## 🛡️ Licence
+
+MIT - projet libre, améliorable en communauté

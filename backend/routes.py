@@ -1,11 +1,18 @@
 # backend/routes.py
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from agents.chef_agent import ChefOrchestreAgent
+import os
 
-# Exemple minimal sans instanciation dynamique
-app = Flask(__name__)
+# Configuration du chemin de template personnalisé
+TEMPLATE_DIR = os.path.abspath("doctor_modules/templates")
+app = Flask(__name__, template_folder=TEMPLATE_DIR)
+
 chef = ChefOrchestreAgent(agents={})
+
+@app.route("/")
+def home():
+    return render_template("index.html")
 
 @app.route("/run", methods=["POST"])
 def run():

@@ -1,15 +1,23 @@
 # test/test_api_routes.py
 
 import unittest
-from agents.chef_agent import ChefOrchestreAgent
-from agents.test_agent import TestAgent
+from fastapi.testclient import TestClient
+from backend.routes import app
 
-class TestOrchestration(unittest.TestCase):
-    def test_dispatch_to_test_agent(self):
-        chef = ChefOrchestreAgent(agents={"TestAgent": TestAgent()})
-        result = chef.handle_task("Écris des tests pour une fonction Flask")
-        self.assertIn("TestAgent", result)
-        self.assertIn("Tests générés", result)
+client = TestClient(app)
 
-if __name__ == '__main__':
+class TestAPIRoutes(unittest.TestCase):
+
+    def test_root_route(self):
+        response = client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Chef d'Orchestre IA", response.text)
+
+    def test_post_task(self):
+        payload = {"task": "génère une fonction qui additionne deux nombres"}
+        response = client.post("/task", json=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("additionne" in response.text.lower())
+
+if __name__ == "__main__":
     unittest.main()

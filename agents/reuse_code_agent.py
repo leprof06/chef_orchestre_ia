@@ -3,10 +3,9 @@
 import logging
 import base64
 from typing import Dict
+from .api_liaison_agent import APILiaisonAgent
+from config_logger import get_logger
 import os
-
-from agents.base_agent import BaseAgent
-from agents.api_liaison_agent import APILiaisonAgent
 
 if os.environ.get("USE_REQUESTS_STUB") == "1":
     try:
@@ -22,9 +21,9 @@ else:
         except ModuleNotFoundError:
             requests = None
 
-class ReuseCodeAgent(BaseAgent):
+class ReuseCodeAgent:
     def __init__(self, api_agent: APILiaisonAgent | None = None) -> None:
-        self.logger = logging.getLogger(__name__)
+        self.logger = get_logger(__name__)
         self.api_agent = api_agent or APILiaisonAgent()
 
     def handle_task(self, query: str) -> str | None:
@@ -34,14 +33,14 @@ class ReuseCodeAgent(BaseAgent):
         search_url = "https://api.github.com/search/code"
         params = {"q": query}
         try:
-            self.logger.info("Searching GitHub for '%s'", query)
+            self.logger.info(f"Recherche GitHub pour : {query}")
             resp = requests.get(search_url, params=params, timeout=10)
             resp.raise_for_status()
             items = resp.json().get("items", [])
             if not items:
                 return None
             file_url = items[0]["url"]
-            self.logger.info("Fetching file from %s", file_url)
+            self.logger.info(f"Récupération du fichier depuis {file_url}")
             file_resp = requests.get(file_url, timeout=10)
             file_resp.raise_for_status()
             encoded = file_resp.json().get("content", "")
@@ -49,7 +48,7 @@ class ReuseCodeAgent(BaseAgent):
                 return None
             return base64.b64decode(encoded).decode("utf-8")
         except Exception as exc:
-            self.logger.error("Failed to fetch code for '%s': %s", query, exc)
+            self.logger.error(f"Échec de récupération pour '{query}' : {exc}")
             return None
 
     def fetch_readme(self, repo_full_name: str) -> str:
@@ -58,12 +57,12 @@ class ReuseCodeAgent(BaseAgent):
             return ""
         url = f"https://raw.githubusercontent.com/{repo_full_name}/HEAD/README.md"
         try:
-            self.logger.info("Fetching README from %s", repo_full_name)
+            self.logger.info(f"Récupération du README de {repo_full_name}")
             response = requests.get(url, timeout=10)
             response.raise_for_status()
             return response.text
         except Exception as exc:
-            self.logger.error("Failed to fetch README from %s: %s", repo_full_name, exc)
+            self.logger.error(f"Erreur de récupération du README : {exc}")
             return ""
 
     def search_and_fetch(self, query: str) -> Dict[str, str]:
@@ -74,7 +73,7 @@ class ReuseCodeAgent(BaseAgent):
             if readme:
                 results[repo] = readme
             else:
-                self.logger.warning("README introuvable pour %s", repo)
+                self.logger.warning(f"README introuvable pour {repo}")
         if not results:
-            self.logger.warning("Aucun README trouvé pour la requête '%s'", query)
+            self.logger.warning(f"Aucun README trouvé pour la requête '{query}'")
         return results

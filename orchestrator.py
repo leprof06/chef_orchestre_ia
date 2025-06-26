@@ -1,39 +1,45 @@
-# Point d'entrée principal du Chef d'Orchestre IA
-import logging
+# orchestrator.py
 
-from agents import APILiaisonAgent, ReuseCodeAgent
-from agents.reuse_code_agent import ReuseCodeAgent
+from agents.chef_agent import ChefOrchestreAgent
+from agents.rh_agent import RHAgent
 from agents.code_agent import CodeAgent
+from agents.test_agent import TestAgent
+from agents.debug_agent import DebugAgent
+from agents.doc_agent import DocAgent
+from agents.optimize_agent import OptimizeAgent
+from agents.api_liaison_agent import APILiaisonAgent
+from agents.ux_agent import UXAgent
+from agents.data_analysis_agent import DataAnalysisAgent
+from agents.reuse_code_agent import ReuseCodeAgent
+from agents.project_doctor_agent import ProjectDoctorAgent
+from config_logger import get_logger
 
-def orchestrate_workflow(query: str, reuse_agent=None, code_agent=None):
-    """Run the workflow using the provided agents."""
-    reuse_agent = reuse_agent or ReuseCodeAgent()
-    code_agent = code_agent or CodeAgent()
-    code = reuse_agent.handle_task(query)
-    return code_agent.handle_task(code)
-
+logger = get_logger(__name__)
 
 def main():
-    """Launch the orchestrator."""
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s:%(message)s")
-    logger = logging.getLogger(__name__)
+    logger.info("Initialisation des agents...")
+    agents = {
+        "CodeAgent": CodeAgent(),
+        "TestAgent": TestAgent(),
+        "DebugAgent": DebugAgent(),
+        "DocAgent": DocAgent(),
+        "OptimizeAgent": OptimizeAgent(),
+        "APILiaisonAgent": APILiaisonAgent(),
+        "UXAgent": UXAgent(),
+        "DataAnalysisAgent": DataAnalysisAgent(),
+        "ReuseCodeAgent": ReuseCodeAgent(),
+        "ProjectDoctorAgent": ProjectDoctorAgent(),
+    }
 
-    logger.info("Bienvenue dans le système Chef d'Orchestre IA")
+    logger.info("Lancement du Chef d'Orchestre...")
+    chef = ChefOrchestreAgent(agents)
 
-    api_agent = APILiaisonAgent()
-    reuse_agent = ReuseCodeAgent(api_agent)
-    repos = reuse_agent.search_and_fetch("python")
-
-    if repos:
-        logger.info("Extraits de README :")
-        for name, readme in repos.items():
-            snippet = readme.splitlines()[0] if readme else ""
-            logger.info(" - %s: %s", name, snippet)
-    else:
-        logger.warning(
-            "Aucun résultat trouvé ou erreur lors de la recherche ou de la récupération du code."
-        )
-
+    while True:
+        task = input("Que souhaitez-vous faire ? (ou 'exit')\n> ")
+        if task.lower() in ("exit", "quit"):
+            break
+        response = chef.handle_task(task)
+        print(response)
 
 if __name__ == "__main__":
     main()
