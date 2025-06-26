@@ -1,52 +1,58 @@
-# Chef d'Orchestre IA
+# Chef Orchestre IA
 
-This repository contains a simple proof of concept for a multi-agent orchestrator written in Python.
-It demonstrates how different agents can cooperate to search repositories on GitHub and reuse code snippets.
+Un système modulaire en Python orchestré par une IA centrale (ChefOrchestreAgent) qui délègue automatiquement des tâches à des agents spécialisés : génération de code, tests, documentation, debug, ergonomie, réutilisation de code GitHub, etc.
 
-## Project Purpose
+## 🧠 Fonctionnement général
 
-The `orchestrator.py` script coordinates two main agents:
+1. L'utilisateur donne une consigne en langage naturel.
+2. Le ChefOrchestre analyse la tâche.
+3. Il répartit les sous-tâches aux bons agents.
+4. Chaque agent travaille, retourne son résultat.
+5. Le chef compile les retours et fournit une sortie complète.
 
-- **APILiaisonAgent** – queries the GitHub API for repositories matching a search term.
-- **ReuseCodeAgent** – retrieves README files or code snippets from those repositories.
+## 🤖 Agents disponibles
 
-The goal is to showcase how such agents could be combined to fetch and analyze external code.
+- `CodeAgent` : génère du code Python
+- `TestAgent` : crée des tests unitaires
+- `DebugAgent` : corrige des bugs
+- `DocAgent` : génère des README/docs
+- `OptimizeAgent` : améliore le code
+- `APILiaisonAgent` : vérifie la cohérence API front/back
+- `UXAgent` : propose des améliorations UI/UX
+- `DataAnalysisAgent` : analyse des jeux de données
+- `RHAgent` : crée de nouveaux agents si besoin
+- `ReuseCodeAgent` : recherche du code libre existant sur GitHub
 
-## Setup
+## 🔧 Structure du projet
 
-1. Install Python (version 3.10 or higher is recommended).
-2. Install the optional `requests` dependency if you want the application to
-   perform real HTTP calls:
-
-   ```bash
-   pip install requests
-   ```
-
-Running tests requires `pytest`, which can be installed with `pip install pytest`.
-The test suite sets the environment variable `USE_REQUESTS_STUB=1` so that the
-project uses the bundled `requests_stub.py` instead of the real library. To
-enable real requests outside of tests, simply install the `requests` package and
-unset `USE_REQUESTS_STUB`.
-
-## Example Usage
-
-Execute the orchestrator directly from the repository root:
-
-```bash
-python orchestrator.py
+```
+chef_orchestre_ia/
+├── orchestrator.py
+├── config.py
+├── workspace/
+├── agents/
+│   ├── code_agent.py, test_agent.py, ...
+├── backend/routes.py
+├── frontend/index.html
+├── test/test_api_routes.py
+├── requirements.txt
+└── README.md
 ```
 
-The script will perform a GitHub search for the term `python`, fetch the README contents from the first results and log the first line of each README.
+## 🗝️ Configuration API
 
-## Repository Structure
+Dans `config.py`, renseignez :
+```python
+CONFIG = {
+    "use_openai": True,
+    "api_key_openai": "sk-...",
+    ...
+}
+```
 
-The project is intentionally small. Important files and directories:
-
-- `agents/` – agent implementations
-  - `api_liaison_agent.py` interfaces with the GitHub API
-  - `code_agent.py` processes downloaded code
-  - `reuse_code_agent.py` searches and retrieves code snippets
-- `orchestrator.py` – entry point that coordinates the agents
-- `frontend/` – placeholder static interface
-- `requests.py` – minimal stand-in used by tests when `requests` is unavailable
-- `test/` – unit tests for the core functionality
+## ▶️ Lancement (mode API Flask)
+```bash
+pip install -r requirements.txt
+python backend/routes.py
+```
+Puis allez sur `http://localhost:5000` ou utilisez l'interface HTML (`frontend/index.html`).

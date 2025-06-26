@@ -1,0 +1,31 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Chef Orchestre IA</title>
+</head>
+<body>
+  <h1>Chef Orchestre IA</h1>
+  <form id="taskForm">
+    <label for="task">Entrez votre consigne :</label>
+    <textarea id="task" name="task" rows="4" cols="50"></textarea><br>
+    <button type="submit">Envoyer</button>
+  </form>
+  <pre id="result"></pre>
+
+  <script>
+    document.getElementById('taskForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const task = document.getElementById('task').value;
+      const response = await fetch('/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task })
+      });
+      const data = await response.json();
+      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+    });
+  </script>
+</body>
+</html>
