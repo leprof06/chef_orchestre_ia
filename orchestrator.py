@@ -1,4 +1,7 @@
 # orchestrator.py
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from agents.chef_agent import ChefOrchestreAgent
 from agents.rh_agent import RHAgent

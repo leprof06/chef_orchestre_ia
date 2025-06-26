@@ -1,6 +1,6 @@
 # agents/code_agent.py
 
-from agents.base_agent import BaseAgent
+from .base_agent import BaseAgent
 import os
 import openai
 import requests
@@ -50,3 +50,4 @@ class CodeAgent(BaseAgent):
 
         self.logger.info("Mode local activé - simulation")
         return f"[Mode local] Code simulé pour : {task_description}"
+
