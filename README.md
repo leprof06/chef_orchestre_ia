@@ -19,3 +19,16 @@ The goal is to showcase how such agents could be combined to fetch and analyze e
 
    ```bash
    pip install requests
+   ```
+
+Running tests requires `pytest`, which can be installed with `pip install pytest`.
+
+## Example Usage
+
+Execute the orchestrator directly from the repository root:
+
+```bash
+python orchestrator.py
+```
+
+The script will perform a GitHub search for the term `python`, fetch the README contents from the first results and log the first line of each README.
