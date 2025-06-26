@@ -1,10 +1,12 @@
 # agents/chef_agent.py
 
 from agents.base_agent import BaseAgent
+from agents.rh_agent import RHAgent
 
 class ChefOrchestreAgent(BaseAgent):
     def __init__(self, agents):
         self.agents = agents
+        self.rh_agent = RHAgent()
 
     def handle_task(self, task_description: str) -> str:
         # 1. ProjectDoctorAgent agit en priorité sur des requêtes complexes
@@ -27,4 +29,6 @@ class ChefOrchestreAgent(BaseAgent):
             generated = code_agent.handle_task(task_description)
             return f"[CodeAgent] → {generated}"
 
-        return "Aucun agent n'a pu traiter cette tâche."
+        # 4. Dernier recours : création d’un nouvel agent avec RHAgent
+        result = self.rh_agent.handle_task(task_description, self.agents)
+        return f"[RHAgent] → {result}"
