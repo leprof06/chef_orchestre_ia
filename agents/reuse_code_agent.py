@@ -1,12 +1,16 @@
 import logging
+import base64
 from typing import Dict
 
 from .api_liaison_agent import APILiaisonAgent
 
 try:
     import requests
-except ModuleNotFoundError:  # pragma: no cover - environment without requests
-    requests = None
+except ModuleNotFoundError:  # pragma: no cover - fallback to local stub
+    try:  # pragma: no cover - fallback path
+        import requests_stub as requests
+    except ModuleNotFoundError:  # pragma: no cover - stub missing
+        requests = None
 
 
 class ReuseCodeAgent:
@@ -15,6 +19,32 @@ class ReuseCodeAgent:
     def __init__(self, api_agent: APILiaisonAgent | None = None) -> None:
         self.logger = logging.getLogger(__name__)
         self.api_agent = api_agent or APILiaisonAgent()
+
+    def handle_task(self, query: str) -> str | None:
+        """Search GitHub code and return the first file's contents."""
+        if requests is None:
+            self.logger.error("La bibliothèque 'requests' n'est pas installée.")
+            return None
+        search_url = "https://api.github.com/search/code"
+        params = {"q": query}
+        try:
+            self.logger.info("Searching GitHub for '%s'", query)
+            resp = requests.get(search_url, params=params, timeout=10)
+            resp.raise_for_status()
+            items = resp.json().get("items", [])
+            if not items:
+                return None
+            file_url = items[0]["url"]
+            self.logger.info("Fetching file from %s", file_url)
+            file_resp = requests.get(file_url, timeout=10)
+            file_resp.raise_for_status()
+            encoded = file_resp.json().get("content", "")
+            if not encoded:
+                return None
+            return base64.b64decode(encoded).decode("utf-8")
+        except Exception as exc:  # pragma: no cover - network call
+            self.logger.error("Failed to fetch code for '%s': %s", query, exc)
+            return None
 
     def fetch_readme(self, repo_full_name: str) -> str:
         """Fetch the README of a repository."""
@@ -41,6 +71,4 @@ class ReuseCodeAgent:
                 results[repo] = readme
             else:
                 self.logger.warning("README introuvable pour %s", repo)
-        if not results:
-            self.logger.info("Aucun README récupéré pour la requête '%s'", query)
-        return results
+                

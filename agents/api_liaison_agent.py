@@ -3,8 +3,11 @@ from typing import List
 
 try:
     import requests
-except ModuleNotFoundError:  # pragma: no cover - environment without requests
-    requests = None
+except ModuleNotFoundError:  # pragma: no cover - fallback to local stub
+    try:  # pragma: no cover - fallback path
+        import requests_stub as requests
+    except ModuleNotFoundError:  # pragma: no cover - stub missing
+        requests = None
 
 
 class APILiaisonAgent:
@@ -29,10 +32,3 @@ class APILiaisonAgent:
         except Exception as exc:  # pragma: no cover - network call
             self.logger.error("GitHub search failed: %s", exc)
             return []
-
-    def process_task(self, query: str) -> List[str]:
-        """High level task processing."""
-        results = self.search_github(query)
-        if not results:
-            self.logger.warning("Unable to process task for query '%s'", query)
-        return results
