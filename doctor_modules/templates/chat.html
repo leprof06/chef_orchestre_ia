@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat avec l'IA</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        .chatbox { max-width: 800px; margin: auto; }
+        .message { padding: 1em; margin-bottom: 1em; border-radius: 10px; }
+        .user { background-color: #d0ebff; text-align: right; }
+        .ai { background-color: #e6ffe6; text-align: left; }
+        form { display: flex; margin-top: 2em; }
+        input[type="text"] { flex: 1; padding: 1em; font-size: 1em; }
+        button { padding: 1em; }
+    </style>
+</head>
+<body>
+<div class="chatbox">
+    <h1>💬 Conversation avec l'IA</h1>
+
+    <div id="chat-history">
+        {% for entry in history %}
+            <div class="message user"><strong>Vous :</strong><br>{{ entry.user }}</div>
+            <div class="message ai"><strong>IA :</strong><br>{{ entry.response }}</div>
+        {% endfor %}
+    </div>
+
+    <form id="chat-form">
+        <input type="text" name="user_input" id="user_input" placeholder="Tape ton message ici..." required>
+        <button type="submit">Envoyer</button>
+    </form>
+</div>
+
+<script>
+    const form = document.getElementById('chat-form');
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const input = document.getElementById('user_input');
+        const message = input.value;
+        const formData = new FormData();
+        formData.append("user_input", message);
+
+        const response = await fetch("/chat", {
+            method: "POST",
+            body: formData
+        });
+
+        const html = await response.text();
+        document.open();
+        document.write(html);
+        document.close();
+    });
+</script>
+</body>
+</html>

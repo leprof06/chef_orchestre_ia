@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>📁 Sélectionner un fichier</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      padding: 2em;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      color: #333;
+    }
+    form {
+      background: white;
+      padding: 1em;
+      border-radius: 6px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.05);
+    }
+    select, button {
+      width: 100%;
+      padding: 0.5em;
+      margin-top: 1em;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #0366d6;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #024f9c;
+    }
+    .nav {
+      margin-top: 2em;
+    }
+    .nav a {
+      text-decoration: none;
+      color: #0366d6;
+      margin-right: 1em;
+    }
+  </style>
+</head>
+<body>
+  <h1>📂 Choisir un fichier à analyser</h1>
+
+  <form method="POST">
+    <label for="project">Projet :</label>
+    <select name="project" id="project" required>
+      {% for project in project_list %}
+        <option value="{{ project }}" {% if project == selected_project %}selected{% endif %}>{{ project }}</option>
+      {% endfor %}
+    </select>
+
+    {% if file_list %}
+    <label for="file">Fichier :</label>
+    <select name="file" id="file" required>
+      {% for file in file_list %}
+        <option value="{{ file }}">{{ file }}</option>
+      {% endfor %}
+    </select>
+    {% endif %}
+
+    <button type="submit">🔍 Lancer l'analyse</button>
+  </form>
+
+  <div class="nav">
+    <a href="/">⬅️ Retour</a>
+  </div>
+</body>
+</html>

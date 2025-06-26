@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Résultats de l'analyse complète</title>
+</head>
+<body>
+    <h1>🧠 Résultats de l'analyse IA complète</h1>
+
+    {% if proposals %}
+        {% for p in proposals %}
+            <div style="border:1px solid #ccc; padding: 1em; margin-bottom: 1em;">
+                <h2>📄 {{ p.filename }}</h2>
+                <h4>⏱ {{ p.timestamp }}</h4>
+                <h3>🔎 Proposition :</h3>
+                <pre>{{ p.proposal }}</pre>
+                <form method="post" action="/apply_proposal">
+                    <input type="hidden" name="filename" value="{{ p.filename }}">
+                    <input type="hidden" name="proposal" value="{{ p.proposal }}">
+                    <button type="submit">✅ Appliquer cette amélioration</button>
+                </form>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Aucune proposition récente trouvée.</p>
+    {% endif %}
+
+    <a href="/">⬅️ Retour à l'accueil</a>
+</body>
+</html>
