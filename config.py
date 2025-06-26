@@ -1,10 +1,11 @@
 # config.py
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 CONFIG = {
-    "use_openai": False,  # Passe à True si tu veux activer l'API GPT
-    "api_key_openai": "",  # À remplir si tu utilises GPT
-    "github_token": "",  # Pour GitHub API si nécessaire
-    "workspace_path": "./workspace/",  # Dossier de travail
-    "debug_mode": True,  # Mode verbeux pour déboguer
-    "log_file": "logs/system.log"  # Fichier log système
+    "use_openai": True,
+    "api_key_openai": os.getenv("OPENAI_API_KEY"),
+    "use_huggingface": False,
+    "api_key_huggingface": os.getenv("HUGGINGFACE_API_KEY"),
 }

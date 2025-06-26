@@ -1,34 +1,33 @@
+# agents/reuse_code_agent.py
+
 import logging
 import base64
 from typing import Dict
-
-from .api_liaison_agent import APILiaisonAgent
 import os
+
+from agents.base_agent import BaseAgent
+from agents.api_liaison_agent import APILiaisonAgent
 
 if os.environ.get("USE_REQUESTS_STUB") == "1":
     try:
         import requests_stub as requests
-    except ModuleNotFoundError:  # pragma: no cover - stub missing
+    except ModuleNotFoundError:
         requests = None
 else:
     try:
         import requests
-    except ModuleNotFoundError:  # pragma: no cover - fallback to local stub
-        try:  # pragma: no cover - fallback path
+    except ModuleNotFoundError:
+        try:
             import requests_stub as requests
-        except ModuleNotFoundError:  # pragma: no cover - stub missing
+        except ModuleNotFoundError:
             requests = None
 
-
-class ReuseCodeAgent:
-    """Agent used to fetch code snippets from GitHub repositories."""
-
+class ReuseCodeAgent(BaseAgent):
     def __init__(self, api_agent: APILiaisonAgent | None = None) -> None:
         self.logger = logging.getLogger(__name__)
         self.api_agent = api_agent or APILiaisonAgent()
 
     def handle_task(self, query: str) -> str | None:
-        """Search GitHub code and return the first file's contents."""
         if requests is None:
             self.logger.error("La bibliothèque 'requests' n'est pas installée.")
             return None
@@ -49,12 +48,11 @@ class ReuseCodeAgent:
             if not encoded:
                 return None
             return base64.b64decode(encoded).decode("utf-8")
-        except Exception as exc:  # pragma: no cover - network call
+        except Exception as exc:
             self.logger.error("Failed to fetch code for '%s': %s", query, exc)
             return None
 
     def fetch_readme(self, repo_full_name: str) -> str:
-        """Fetch the README of a repository."""
         if requests is None:
             self.logger.error("La bibliothèque 'requests' n'est pas installée.")
             return ""
@@ -64,12 +62,11 @@ class ReuseCodeAgent:
             response = requests.get(url, timeout=10)
             response.raise_for_status()
             return response.text
-        except Exception as exc:  # pragma: no cover - network call
+        except Exception as exc:
             self.logger.error("Failed to fetch README from %s: %s", repo_full_name, exc)
             return ""
 
     def search_and_fetch(self, query: str) -> Dict[str, str]:
-        """Search GitHub and retrieve README contents."""
         repos = self.api_agent.search_github(query)
         results: Dict[str, str] = {}
         for repo in repos:
