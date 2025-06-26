@@ -1,37 +1,21 @@
-Chef d'Orchestre IA
-+
-+Ce dépôt contient un petit système d'orchestration écrit en Python. Il expose deux agents :
-+
-+- **APILiaisonAgent** : interagit avec l'API GitHub pour rechercher des dépôts.
-+- **ReuseCodeAgent** : récupère le contenu des README des dépôts trouvés.
-+
-+L'orchestrateur (`orchestrator.py`) utilise ces agents pour afficher un extrait de README correspondant à une requête de recherche.
-+
-+## Arborescence des fichiers importants
-+
-+```
-+agents/
-+    __init__.py           # Exporte les agents
-+    api_liaison_agent.py  # Requêtes GitHub avec gestion d'erreurs
-+    reuse_code_agent.py   # Récupération des README
-+orchestrator.py           # Point d'entrée principal
-+```
-+
-+## Exécution
-+
-+```bash
-+python orchestrator.py
-+```
-+
-+L'orchestrateur recherche des dépôts relatifs au mot-clé `python` et affiche la première ligne de leur README.
-+
-+## Dépendances
-+
-+- Python 3.12 ou plus récent
-+- `requests` (pour les appels HTTP)
-+
-+Installez `requests` si nécessaire :
-+
-+```bash
-+pip install requests
-+```
+# Chef d'Orchestre IA
+
+This repository contains a simple proof of concept for a multi-agent orchestrator written in Python.
+It demonstrates how different agents can cooperate to search repositories on GitHub and reuse code snippets.
+
+## Project Purpose
+
+The `orchestrator.py` script coordinates two main agents:
+
+- **APILiaisonAgent** – queries the GitHub API for repositories matching a search term.
+- **ReuseCodeAgent** – retrieves README files or code snippets from those repositories.
+
+The goal is to showcase how such agents could be combined to fetch and analyze external code.
+
+## Setup
+
+1. Install Python (version 3.10 or higher is recommended).
+2. Install the required dependencies. Only the `requests` package is needed:
+
+   ```bash
+   pip install requests
