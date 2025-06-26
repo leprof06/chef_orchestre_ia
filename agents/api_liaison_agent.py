@@ -1,13 +1,20 @@
 import logging
 from typing import List
+import os
 
-try:
-    import requests
-except ModuleNotFoundError:  # pragma: no cover - fallback to local stub
-    try:  # pragma: no cover - fallback path
+if os.environ.get("USE_REQUESTS_STUB") == "1":
+    try:
         import requests_stub as requests
     except ModuleNotFoundError:  # pragma: no cover - stub missing
         requests = None
+else:
+    try:
+        import requests
+    except ModuleNotFoundError:  # pragma: no cover - fallback to local stub
+        try:  # pragma: no cover - fallback path
+            import requests_stub as requests
+        except ModuleNotFoundError:  # pragma: no cover - stub missing
+            requests = None
 
 
 class APILiaisonAgent:

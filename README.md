@@ -15,13 +15,18 @@ The goal is to showcase how such agents could be combined to fetch and analyze e
 ## Setup
 
 1. Install Python (version 3.10 or higher is recommended).
-2. Install the required dependencies. Only the `requests` package is needed:
+2. Install the optional `requests` dependency if you want the application to
+   perform real HTTP calls:
 
    ```bash
    pip install requests
    ```
 
 Running tests requires `pytest`, which can be installed with `pip install pytest`.
+The test suite sets the environment variable `USE_REQUESTS_STUB=1` so that the
+project uses the bundled `requests_stub.py` instead of the real library. To
+enable real requests outside of tests, simply install the `requests` package and
+unset `USE_REQUESTS_STUB`.
 
 ## Example Usage
 
@@ -32,3 +37,16 @@ python orchestrator.py
 ```
 
 The script will perform a GitHub search for the term `python`, fetch the README contents from the first results and log the first line of each README.
+
+## Repository Structure
+
+The project is intentionally small. Important files and directories:
+
+- `agents/` – agent implementations
+  - `api_liaison_agent.py` interfaces with the GitHub API
+  - `code_agent.py` processes downloaded code
+  - `reuse_code_agent.py` searches and retrieves code snippets
+- `orchestrator.py` – entry point that coordinates the agents
+- `frontend/` – placeholder static interface
+- `requests.py` – minimal stand-in used by tests when `requests` is unavailable
+- `test/` – unit tests for the core functionality

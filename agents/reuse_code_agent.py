@@ -3,14 +3,21 @@ import base64
 from typing import Dict
 
 from .api_liaison_agent import APILiaisonAgent
+import os
 
-try:
-    import requests
-except ModuleNotFoundError:  # pragma: no cover - fallback to local stub
-    try:  # pragma: no cover - fallback path
+if os.environ.get("USE_REQUESTS_STUB") == "1":
+    try:
         import requests_stub as requests
     except ModuleNotFoundError:  # pragma: no cover - stub missing
         requests = None
+else:
+    try:
+        import requests
+    except ModuleNotFoundError:  # pragma: no cover - fallback to local stub
+        try:  # pragma: no cover - fallback path
+            import requests_stub as requests
+        except ModuleNotFoundError:  # pragma: no cover - stub missing
+            requests = None
 
 
 class ReuseCodeAgent:
@@ -71,4 +78,3 @@ class ReuseCodeAgent:
                 results[repo] = readme
             else:
                 self.logger.warning("README introuvable pour %s", repo)
-                

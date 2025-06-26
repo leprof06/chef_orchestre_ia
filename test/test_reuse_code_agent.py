@@ -1,7 +1,10 @@
 import base64
 from unittest import mock
+import os
 
 import pytest
+
+os.environ["USE_REQUESTS_STUB"] = "1"
 
 from agents.reuse_code_agent import ReuseCodeAgent
 from orchestrator import orchestrate_workflow
