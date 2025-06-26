@@ -78,3 +78,6 @@ class ReuseCodeAgent:
                 results[repo] = readme
             else:
                 self.logger.warning("README introuvable pour %s", repo)
+        if not results:
+            self.logger.warning("Aucun README trouvé pour la requête '%s'", query)
+        return results
