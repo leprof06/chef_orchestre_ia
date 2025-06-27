@@ -1,15 +1,16 @@
 import sys
 import os
+import webbrowser
 from dotenv import load_dotenv
 from tkinter import Tk, filedialog
 
 # Ajout du répertoire du projet au sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
+from config_logger import get_logger
+
 # Chargement de .env
 load_dotenv()
-
-from config_logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -25,16 +26,42 @@ def select_project_folder():
 
 def main():
     global PROJECT_FOLDER
-    logger.info("Sélection du dossier à analyser...")
-    PROJECT_FOLDER = select_project_folder()
 
-    if not PROJECT_FOLDER or not os.path.isdir(PROJECT_FOLDER):
-        logger.error("❌ Dossier non valide.")
+    print("\n🎯 Bienvenue dans Chef d'Orchestre IA !")
+    print("Que souhaitez-vous faire :")
+    print("1. Sélectionner un dossier existant")
+    print("2. Créer un nouveau projet vide")
+    print("3. Continuer sans projet (mode exploration)")
+    print("4. Lancer l'interface chat")
+    
+    choice = input("\nVotre choix (1/2/3/4) : ")
+
+    if choice == "1":
+        PROJECT_FOLDER = select_project_folder()
+        if not PROJECT_FOLDER or not os.path.isdir(PROJECT_FOLDER):
+            logger.error("❌ Dossier non valide.")
+            return
+        logger.info(f"📁 Dossier sélectionné : {PROJECT_FOLDER}")
+    elif choice == "2":
+        path = input("Entrez le nom du nouveau dossier : ")
+        os.makedirs(path, exist_ok=True)
+        PROJECT_FOLDER = os.path.abspath(path)
+        logger.info(f"📁 Nouveau dossier créé : {PROJECT_FOLDER}")
+    elif choice == "3":
+        logger.warning("⚠️ Aucune analyse de projet ne sera disponible.")
+    elif choice == "4":
+        index_path = os.path.abspath("frontend/index.html")
+        if os.path.exists(index_path):
+            webbrowser.open(f"file://{index_path}")
+            logger.info("✅ Interface ouverte dans le navigateur.")
+        else:
+            logger.error("❌ Fichier index.html introuvable dans le dossier frontend.")
+        return
+    else:
+        print("Choix invalide.")
         return
 
-    logger.info(f"📁 Dossier sélectionné : {PROJECT_FOLDER}")
-
-    # Importations après sélection du dossier pour éviter les conflits de dépendances
+    # Import dynamique des agents après sélection du projet
     from agents.chef_agent import ChefOrchestreAgent
     from agents.rh_agent import RHAgent
     from agents.code_agent import CodeAgent
@@ -66,7 +93,7 @@ def main():
     chef = ChefOrchestreAgent(agents)
 
     while True:
-        task = input("Que souhaitez-vous faire ? (ou 'exit')\n> ")
+        task = input("\n🧠 Que souhaitez-vous faire ? (ou 'exit')\n> ")
         if task.lower() in ("exit", "quit"):
             break
         response = chef.handle_task(task)

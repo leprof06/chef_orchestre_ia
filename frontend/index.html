@@ -1,31 +1,60 @@
-<!-- frontend/index.html -->
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Chef Orchestre IA</title>
-</head>
-<body>
-  <h1>Chef Orchestre IA</h1>
-  <form id="taskForm">
-    <label for="task">Entrez votre consigne :</label>
-    <textarea id="task" name="task" rows="4" cols="50"></textarea><br>
-    <button type="submit">Envoyer</button>
-  </form>
-  <pre id="result"></pre>
+import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
-  <script>
-    document.getElementById('taskForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const task = document.getElementById('task').value;
-      const response = await fetch('/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task })
-      });
-      const data = await response.json();
-      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
-    });
-  </script>
-</body>
-</html>
+export default function InterfaceIA() {
+  const [chat, setChat] = useState([]);
+  const [input, setInput] = useState("");
+  const [projectType, setProjectType] = useState(null);
+
+  const sendMessage = () => {
+    if (!input) return;
+    setChat([...chat, { role: "user", content: input }]);
+    setInput("");
+    // Ici appel backend pour gérer la requête utilisateur selon les agents IA
+  };
+
+  const handleProjectType = (type) => {
+    setProjectType(type);
+    setChat([]);
+    // Ici redirection logique selon le type de projet sélectionné
+  };
+
+  return (
+    <div className="min-h-screen p-4 bg-gray-100">
+      <h1 className="text-3xl font-bold mb-4">Chef d'Orchestre IA</h1>
+
+      {!projectType && (
+        <div className="space-x-4 mb-6">
+          <Button onClick={() => handleProjectType("existing")}>📁 Travailler sur un projet existant</Button>
+          <Button onClick={() => handleProjectType("new")}>✨ Nouveau projet</Button>
+        </div>
+      )}
+
+      {projectType && (
+        <Card className="max-w-3xl mx-auto">
+          <CardContent className="space-y-4">
+            <div className="text-xl">👋 Bonjour ! Sur quoi travaillons-nous aujourd'hui ?</div>
+            <div className="h-80 overflow-y-auto bg-white p-4 rounded border">
+              {chat.map((msg, index) => (
+                <div key={index} className={`mb-2 ${msg.role === "user" ? "text-right" : "text-left text-gray-600"}`}>
+                  <div>{msg.content}</div>
+                </div>
+              ))}
+            </div>
+            <div className="flex space-x-2">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Décrivez votre besoin..."
+              />
+              <Button onClick={sendMessage}>Envoyer</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

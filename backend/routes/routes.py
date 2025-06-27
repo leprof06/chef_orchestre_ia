@@ -11,6 +11,11 @@ from core.safe_update import safe_apply_modification
 from detection.capability_detector import detect_capabilities
 from generation.generate_global_report import scan_and_generate_report
 from generation.generate_readmes_from_structure import analyser_tous_les_projets
+from flask import Flask, request, jsonify, render_template
+from agents.chef_agent import ChefOrchestreAgent
+
+app = Flask(__name__, template_folder="../frontend")
+chef = ChefOrchestreAgent(agents={})
 
 routes_test = Blueprint("test_runner", __name__)
 file_lock = threading.Lock()
@@ -28,6 +33,22 @@ def get_active_project_folder():
 @routes_test.route("/")
 def home():
     return render_template("index.html")
+
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route("/run", methods=["POST"])
+def run():
+    data = request.json
+    task = data.get("task")
+    if not task:
+        return jsonify({"error": "No task provided"}), 400
+    result = chef.handle_task(task)
+    return jsonify({"result": result})
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 @routes_test.route("/choose_project", methods=["GET", "POST"])
 def choose_project():
