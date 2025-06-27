@@ -1,69 +1,99 @@
-from flask import Blueprint, request, jsonify, send_from_directory
+import sys
 import os
-from agents.chef_agent import ChefOrchestreAgent
-from doctor_modules.analysis.project_analysis import analyse_project
+import webbrowser
+from dotenv import load_dotenv
+from tkinter import Tk, filedialog
 
-routes = Blueprint("routes", __name__)
+# Ajout du répertoire du projet au sys.path
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-chef = ChefOrchestreAgent(agents={})
-paused = False
-UPLOAD_FOLDER = "uploaded_projects"
+from config_logger import get_logger
+from orchestrator import Orchestrator
 
-@routes.route("/run", methods=["POST"])
-def run():
-    if paused:
-        return jsonify({"result": "⏸ En pause. Reprenez pour continuer."})
-    data = request.json
-    task = data.get("task")
-    if not task:
-        return jsonify({"error": "No task provided"}), 400
-    result = chef.handle_task(task)
-    return jsonify({"result": result})
+# Chargement de .env
+load_dotenv()
+logger = get_logger(__name__)
 
-@routes.route("/upload", methods=["POST"])
-def upload():
-    if "project" not in request.files:
-        return jsonify({"error": "No file provided"}), 400
-    file = request.files["project"]
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
-    filepath = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(filepath)
-    result = analyse_project(filepath)
-    return jsonify({"result": result})
+PROJECT_FOLDER = None
 
-@routes.route("/toggle_pause", methods=["POST"])
-def toggle_pause():
-    global paused
-    paused = not paused
-    return jsonify({"paused": paused})
+def select_project_folder():
+    root = Tk()
+    root.withdraw()
+    folder = filedialog.askdirectory(title="Choisissez le dossier du projet à analyser")
+    return folder if folder else os.getenv("DEFAULT_PROJECT_FOLDER")
 
-@routes.route("/files", methods=["GET"])
-def list_files():
-    files = []
-    for root, dirs, filenames in os.walk(UPLOAD_FOLDER):
-        for f in filenames:
-            rel_path = os.path.relpath(os.path.join(root, f), UPLOAD_FOLDER)
-            files.append(rel_path)
-    return jsonify({"files": files})
+def parse_user_input(user_input, project_path=None):
+    user_input = user_input.lower()
 
-@routes.route("/file", methods=["GET"])
-def get_file():
-    path = request.args.get("path")
-    full_path = os.path.join(UPLOAD_FOLDER, path)
-    if not os.path.isfile(full_path):
-        return jsonify({"error": "File not found"}), 404
-    with open(full_path, "r", encoding="utf-8") as f:
-        content = f.read()
-    return jsonify({"content": content})
+    if "analyse" in user_input or "scanner" in user_input:
+        return {"manager": "analyse", "type": "analyse_code", "project_path": project_path}
+    elif "clé api" in user_input or "api key" in user_input:
+        return {"manager": "analyse", "type": "detect_api_keys", "project_path": project_path}
+    elif "dépendance" in user_input or "requirement" in user_input:
+        return {"manager": "devops", "type": "manage_dependencies", "project_path": project_path}
+    elif "génère" in user_input or "écris" in user_input:
+        return {"manager": "code", "type": "generate_code", "project_path": project_path}
+    elif "optimise" in user_input:
+        return {"manager": "code", "type": "optimize_code", "project_path": project_path}
+    elif "debug" in user_input or "corrige" in user_input:
+        return {"manager": "code", "type": "debug_code", "project_path": project_path}
+    elif "agent" in user_input and "crée" in user_input:
+        return {"manager": "rh", "type": "create_agent"}
+    elif "manager" in user_input and "crée" in user_input:
+        return {"manager": "rh", "type": "create_manager"}
+    elif "interface" in user_input or "ui" in user_input:
+        return {"manager": "ux", "type": "analyze_ui", "project_path": project_path}
+    else:
+        return {"manager": "analyse", "type": "analyse_code", "project_path": project_path, "note": "🔍 Interprétation approximative"}
 
-@routes.route("/file", methods=["POST"])
-def save_file():
-    data = request.json
-    path = data.get("path")
-    content = data.get("content")
-    full_path = os.path.join(UPLOAD_FOLDER, path)
-    os.makedirs(os.path.dirname(full_path), exist_ok=True)
-    with open(full_path, "w", encoding="utf-8") as f:
-        f.write(content)
-    return jsonify({"result": "Fichier sauvegardé avec succès."})
+def main():
+    global PROJECT_FOLDER
+
+    print("\n🎯 Bienvenue dans Chef d'Orchestre IA !")
+    print("Que souhaitez-vous faire :")
+    print("1. Sélectionner un dossier existant")
+    print("2. Créer un nouveau projet vide")
+    print("3. Continuer sans projet (mode exploration)")
+    print("4. Lancer l'interface chat")
+
+    choice = input("\nVotre choix (1/2/3/4) : ")
+
+    if choice == "1":
+        PROJECT_FOLDER = select_project_folder()
+        if not PROJECT_FOLDER or not os.path.isdir(PROJECT_FOLDER):
+            logger.error("❌ Dossier non valide.")
+            return
+        logger.info(f"📁 Dossier sélectionné : {PROJECT_FOLDER}")
+    elif choice == "2":
+        path = input("Entrez le nom du nouveau dossier : ")
+        os.makedirs(path, exist_ok=True)
+        PROJECT_FOLDER = os.path.abspath(path)
+        logger.info(f"📁 Nouveau dossier créé : {PROJECT_FOLDER}")
+    elif choice == "3":
+        logger.warning("⚠️ Aucune analyse de projet ne sera disponible.")
+    elif choice == "4":
+        index_path = os.path.abspath("frontend/index.html")
+        if os.path.exists(index_path):
+            webbrowser.open(f"file://{index_path}")
+            logger.info("✅ Interface ouverte dans le navigateur.")
+        else:
+            logger.error("❌ Fichier index.html introuvable dans le dossier frontend.")
+        return
+    else:
+        print("Choix invalide.")
+        return
+
+    orchestrator = Orchestrator()
+    logger.info("🎬 Orchestrateur initialisé.")
+
+    while True:
+        task_input = input("\n🧠 Que souhaitez-vous faire ? (ou 'exit')\n> ")
+        if task_input.lower() in ("exit", "quit"):
+            break
+
+        task = parse_user_input(task_input, PROJECT_FOLDER)
+        response = orchestrator.dispatch_task(task)
+        print(response)
+
+if __name__ == "__main__":
+    main()

@@ -1,23 +1,25 @@
-
 from managers.base_manager import BaseManager
-from agents.code_agent import CodeAgent
-from agents.debug_agent import DebugAgent
-from agents.reuse_code_agent import ReuseCodeAgent
+from agents.code_generator_agent import CodeGeneratorAgent
+from agents.code_optimizer_agent import CodeOptimizerAgent
+from agents.code_debugger_agent import CodeDebuggerAgent
 
 class ChefCodeManager(BaseManager):
     def __init__(self):
         super().__init__("ChefCodeManager")
-        self.register_agent("code", CodeAgent())
-        self.register_agent("debug", DebugAgent())
-        self.register_agent("reuse", ReuseCodeAgent())
+        self.agents = {
+            "code_generator": CodeGeneratorAgent(),
+            "code_optimizer": CodeOptimizerAgent(),
+            "code_debugger": CodeDebuggerAgent()
+        }
 
-    def handle_task(self, task):
+    def dispatch(self, task):
         task_type = task.get("type")
-        if task_type == "code":
-            return self.agents["code"].execute(task)
-        elif task_type == "debug":
-            return self.agents["debug"].execute(task)
-        elif task_type == "reuse":
-            return self.agents["reuse"].execute(task)
+
+        if task_type == "generate_code":
+            return self.agents["code_generator"].execute(task)
+        elif task_type == "optimize_code":
+            return self.agents["code_optimizer"].execute(task)
+        elif task_type == "debug_code":
+            return self.agents["code_debugger"].execute(task)
         else:
-            return {"error": f"Tâche inconnue pour Code : {task_type}"}
+            return {"error": "Type de tâche inconnu pour ChefCodeManager"}

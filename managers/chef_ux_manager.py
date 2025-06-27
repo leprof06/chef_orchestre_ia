@@ -1,23 +1,17 @@
-
 from managers.base_manager import BaseManager
-from agents.ux_agent import UxAgent
-from agents.test_agent import TestAgent
-from agents.doc_agent import DocAgent
+from agents.ui_feedback_agent import UIFeedbackAgent
 
-class ChefUxManager(BaseManager):
+class ChefUXManager(BaseManager):
     def __init__(self):
-        super().__init__("ChefUxManager")
-        self.register_agent("ux", UxAgent())
-        self.register_agent("test", TestAgent())
-        self.register_agent("doc", DocAgent())
+        super().__init__("ChefUXManager")
+        self.agents = {
+            "ui_feedback": UIFeedbackAgent()
+        }
 
-    def handle_task(self, task):
+    def dispatch(self, task):
         task_type = task.get("type")
-        if task_type == "ux":
-            return self.agents["ux"].execute(task)
-        elif task_type == "test":
-            return self.agents["test"].execute(task)
-        elif task_type == "doc":
-            return self.agents["doc"].execute(task)
+
+        if task_type == "analyze_ui":
+            return self.agents["ui_feedback"].execute(task)
         else:
-            return {"error": f"Tâche inconnue pour UX : {task_type}"}
+            return {"error": "Type de tâche inconnu pour ChefUXManager"}

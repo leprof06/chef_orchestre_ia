@@ -1,15 +1,19 @@
-
 from managers.base_manager import BaseManager
-from agents.rh_agent import RhAgent
+from agents.agent_factory import AgentFactory
 
-class ChefRhManager(BaseManager):
+class ChefRHManager(BaseManager):
     def __init__(self):
-        super().__init__("ChefRhManager")
-        self.register_agent("rh", RhAgent())
+        super().__init__("ChefRHManager")
+        self.agents = {
+            "factory": AgentFactory()
+        }
 
-    def handle_task(self, task):
+    def dispatch(self, task):
         task_type = task.get("type")
-        if task_type == "rh":
-            return self.agents["rh"].execute(task)
+
+        if task_type == "create_agent":
+            return self.agents["factory"].create_agent(task)
+        elif task_type == "create_manager":
+            return self.agents["factory"].create_manager(task)
         else:
-            return {"error": f"Tâche inconnue pour RH : {task_type}"}
+            return {"error": "Type de tâche inconnu pour ChefRHManager"}
