@@ -1,28 +1,108 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Chef d'Orchestre IA</title>
+  <meta charset="UTF-8" />
+  <title>Chef d'Orchestre IA</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 2em; }
+    .container { background: white; padding: 2em; border-radius: 8px; max-width: 800px; margin: auto; }
+    #chat { border: 1px solid #ccc; padding: 1em; height: 300px; overflow-y: scroll; margin-bottom: 1em; background: #fafafa; }
+    .message { margin-bottom: 0.5em; }
+    .user { font-weight: bold; color: #333; }
+    .bot { color: #007BFF; }
+    .btns { margin-bottom: 1em; }
+    #status { font-size: 0.9em; color: green; margin-bottom: 1em; }
+  </style>
 </head>
 <body>
-    <h1>Bienvenue dans Chef d'Orchestre IA</h1>
-    <form id="task-form">
-        <input type="text" id="task" placeholder="Entrez une tâche...">
-        <button type="submit">Lancer</button>
-    </form>
-    <pre id="result"></pre>
+  <div class="container">
+    <h2>👋 Bonjour ! Sur quoi travaillons-nous aujourd'hui ?</h2>
+    <div id="status">⏺ Statut : actif</div>
+    <div class="btns">
+      <input type="file" id="projectFile" />
+      <button onclick="uploadProject()">Analyser un projet</button>
+      <button onclick="togglePause()" id="pauseBtn">⏸ Mettre en pause</button>
+      <button onclick="startNewProject()">✨ Nouveau projet</button>
+    </div>
+    <div id="chat"></div>
+    <input type="text" id="userInput" placeholder="Décrivez votre projet ici..." style="width: 80%;" />
+    <button onclick="sendMessage()">Envoyer</button>
+  </div>
 
-    <script>
-        document.getElementById("task-form").addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const task = document.getElementById("task").value;
-            const response = await fetch("/run", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ task })
-            });
-            const data = await response.json();
-            document.getElementById("result").textContent = JSON.stringify(data, null, 2);
-        });
-    </script>
+  <script>
+    let isPaused = false;
+
+    function updateStatus() {
+      const status = document.getElementById("status");
+      const pauseBtn = document.getElementById("pauseBtn");
+      if (isPaused) {
+        status.textContent = "⏸ Statut : en pause";
+        status.style.color = "orange";
+        pauseBtn.textContent = "▶ Reprendre";
+      } else {
+        status.textContent = "⏺ Statut : actif";
+        status.style.color = "green";
+        pauseBtn.textContent = "⏸ Mettre en pause";
+      }
+    }
+
+    function appendMessage(sender, text) {
+      const chat = document.getElementById("chat");
+      const div = document.createElement("div");
+      div.className = "message";
+      div.innerHTML = `<span class="${sender}">${sender}:</span> ${text}`;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("userInput");
+      const text = input.value;
+      if (!text) return;
+      appendMessage("user", text);
+      input.value = "";
+      fetch("/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task: text })
+      })
+      .then(res => res.json())
+      .then(data => appendMessage("bot", data.result || "Pas de réponse."));
+    }
+
+    function uploadProject() {
+      const fileInput = document.getElementById("projectFile");
+      const file = fileInput.files[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append("project", file);
+      appendMessage("user", `Analyse le projet ${file.name}`);
+      fetch("/upload", {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => appendMessage("bot", data.result || "Analyse terminée sans réponse."));
+    }
+
+    function togglePause() {
+      fetch("/toggle_pause", {
+        method: "POST"
+      })
+      .then(res => res.json())
+      .then(data => {
+        isPaused = data.paused;
+        updateStatus();
+      });
+    }
+
+    function startNewProject() {
+      appendMessage("user", "Je veux créer un nouveau projet.");
+      sendMessage();
+    }
+
+    // Initialisation
+    updateStatus();
+  </script>
 </body>
 </html>
