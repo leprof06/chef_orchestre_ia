@@ -18,18 +18,6 @@ MODEL_GPT35 = "gpt-3.5-turbo"
 
 custom_objectives = ""
 
-
-def load_readme():
-    global custom_objectives
-    if README_PATH and README_PATH.endswith(".md"):
-        try:
-            with open(README_PATH, "r", encoding="utf-8") as f:
-                custom_objectives = f.read()
-                logging.info("📖 Objectifs utilisateur chargés depuis README.md")
-        except Exception as e:
-            logging.warning(f"Impossible de lire le README.md : {e}")
-
-
 def get_best_available_model(prompt: str = ""):
     if len(prompt) > 1000:
         if config("MISTRAL_API_KEY", default=None):
@@ -92,25 +80,9 @@ def generate_code_proposal(code, filename):
             logging.error(f"❌ Erreur OpenAI : {e}")
             return f"Erreur OpenAI : {e}"
 
-    elif provider == "MISTRAL":
-        print("🔷 Utilisation de Mistral 7B via HuggingFace")
-        return query_mistral_api_model(prompt)
-
-    elif provider == "COHERE":
-        print("🟣 Utilisation de Cohere")
-        return query_cohere_model(prompt)
-
-    elif provider == "GOOGLE":
-        print("🟢 Utilisation de Google Gemini")
-        return query_google_model(prompt)
-
     elif provider == "HUGGINGFACE":
         print("🟡 Utilisation de HuggingFace (gpt2 par défaut)")
         return query_huggingface_model("gpt2", prompt)
-
-    elif provider == "AWS":
-        print("🟠 AWS activé (fonction à implémenter)")
-        return query_aws_model(prompt)
 
     else:
         logging.warning("⚠️ Aucune clé API valide détectée.")

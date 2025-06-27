@@ -2,7 +2,7 @@ import os
 import shutil
 import subprocess
 import logging
-from config.config import PROJECT_FOLDER
+from config import PROJECT_FOLDER
 
 # Dossier de sauvegarde
 BACKUP_FOLDER = os.path.join(PROJECT_FOLDER, "fichiers_fonctionnels_avant_modifications")
