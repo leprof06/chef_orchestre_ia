@@ -4,10 +4,7 @@ import subprocess
 import threading
 import json
 from flask import request, redirect, Blueprint, url_for, render_template, render_template_string, jsonify, session, flash
-from config import README_PATH, PROJECT_FOLDER
-from core.services import load_readme, generate_code_proposal, backup_file
-from core.history_manager import save_proposal
-from core.safe_update import safe_apply_modification
+from config import PROJECT_FOLDER
 from agents.chef_agent import ChefOrchestreAgent
 
 app = Flask(__name__, template_folder="../frontend")

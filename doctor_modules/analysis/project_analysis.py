@@ -1,7 +1,6 @@
 
 import os
 from doctor_modules.analysis.utils import is_code_file, extract_code_structure
-from detection.dependency_checker import check_dependencies
 
 API_CALL_CACHE = set()  # Pour éviter les appels redondants
 
