@@ -4,7 +4,7 @@ from flask import Blueprint, render_template, request, session
 from orchestrator import PROJECT_FOLDER
 from core.services import generate_code_proposal
 from core.history_manager import save_proposal
-from generation.init_readme_sync import get_readme_insight
+
 
 routes_deep_analysis = Blueprint("deep_analysis", __name__)
 

@@ -8,10 +8,6 @@ from config import README_PATH, PROJECT_FOLDER
 from core.services import load_readme, generate_code_proposal, backup_file
 from core.history_manager import save_proposal
 from core.safe_update import safe_apply_modification
-from detection.capability_detector import detect_capabilities
-from generation.generate_global_report import scan_and_generate_report
-from generation.generate_readmes_from_structure import analyser_tous_les_projets
-from flask import Flask, request, jsonify, render_template
 from agents.chef_agent import ChefOrchestreAgent
 
 app = Flask(__name__, template_folder="../frontend")

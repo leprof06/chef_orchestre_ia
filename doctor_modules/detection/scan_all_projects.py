@@ -2,8 +2,7 @@ import os
 import json
 import logging
 from flask import Blueprint, render_template, session
-from config.config import PROJECT_FOLDER
-from detection.capability_detector import detect_capabilities, detect_capabilities_missing
+from config import PROJECT_FOLDER
 
 scan_all_projects_routes = Blueprint("scan_all_projects", __name__)
 

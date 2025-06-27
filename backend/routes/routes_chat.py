@@ -5,8 +5,6 @@ from flask import Blueprint, request, render_template, session
 from config import README_PATH, OPENAI_API_KEY, HUGGINGFACE_API_KEY, MISTRAL_API_KEY, get_best_available_model
 from core.history_manager import save_proposal, load_history
 from core.client import query_huggingface_model, query_openai_model, query_cohere_model
-from detection.capability_detector import detect_capabilities
-from detection.api_key_checker import API_KEYS_DOCS
 from decouple import config
 
 chat_routes = Blueprint("chat", __name__)

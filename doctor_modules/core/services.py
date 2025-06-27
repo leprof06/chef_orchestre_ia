@@ -5,11 +5,6 @@ from core.history_manager import save_proposal
 from core.client import (
     query_huggingface_model,
     query_openai_model,
-    query_mistral_api_model,
-    query_cohere_model,
-    query_google_model,
-    query_aws_model,
-    query_deepl_translation
 )
 from decouple import config
 
@@ -19,24 +14,10 @@ MODEL_GPT35 = "gpt-3.5-turbo"
 custom_objectives = ""
 
 def get_best_available_model(prompt: str = ""):
-    if len(prompt) > 1000:
-        if config("MISTRAL_API_KEY", default=None):
-            return "MISTRAL"
-        if config("COHERE_API_KEY", default=None):
-            return "COHERE"
-
     if config("OPENAI_API_KEY", default=None):
         return "OPENAI"
-    if config("MISTRAL_API_KEY", default=None):
-        return "MISTRAL"
-    if config("COHERE_API_KEY", default=None):
-        return "COHERE"
-    if config("GOOGLE_API_KEY", default=None):
-        return "GOOGLE"
     if config("HUGGINGFACE_API_KEY", default=None):
         return "HUGGINGFACE"
-    if config("AWS_API_KEY", default=None):
-        return "AWS"
     return None
 
 
@@ -53,14 +34,6 @@ def is_complex_request(message: str) -> bool:
         "résume", "analyse", "explique", "corrige", "améliore", "optimise", "comparer", "stratégie"
     ])
     return long_msg or has_keywords
-
-
-def translate_text(text: str, target_lang: str = "EN") -> str:
-    try:
-        return query_deepl_translation(text, target_lang)
-    except Exception as e:
-        logging.warning(f"Erreur traduction DeepL : {e}")
-        return text
 
 
 def generate_code_proposal(code, filename):

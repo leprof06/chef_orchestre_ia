@@ -1,9 +1,7 @@
 
 import os
 from doctor_modules.analysis.utils import is_code_file, extract_code_structure
-from detection.api_key_checker import check_api_keys
 from detection.dependency_checker import check_dependencies
-from detection.capability_detector import detect_capabilities
 
 API_CALL_CACHE = set()  # Pour éviter les appels redondants
 

@@ -5,7 +5,6 @@ from orchestrator import PROJECT_FOLDER
 from routes.routes import application_data
 from core.history_manager import save_proposal
 from core.services import generate_code_proposal
-from core.smart_model_selector import get_best_model_response
 
 routes_auto_fix_combined = Blueprint("auto_fix_combined", __name__)
 
