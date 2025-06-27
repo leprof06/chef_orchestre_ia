@@ -6,16 +6,16 @@ Une IA locale modulaire capable de recevoir des instructions en langage naturel,
 
 ## 🚀 Fonctionnalités principales
 
-- 💬 Instructions en langage naturel (via interface chat)
+- 💬 Interface de chat intuitive via navigateur
 - 🧠 Création automatique d'agents via `RHAgent`
 - 🛠 Agents spécialisés : code, test, debug, doc, UX, optimisation, analyse, liaison API...
-- 🔁 Réutilisation de code existant (GitHub, HuggingFace...)
+- 🔁 Réutilisation de code existant avec GitHub / HuggingFace
 - 📄 Analyse de projet complète via `ProjectDoctorAgent`
 - 🧪 Tests automatisés générés
 - 🛑 Fonction Pause/Play pour modifier le code manuellement
-- 🖥 Interface HTML interactive
+- 🖥 Interface HTML interactive avec éditeur de fichiers
 - 📦 Export du projet finalisé (zip + README auto)
-- 🔐 Fonctionnement local avec option OpenAI ou HuggingFace
+- 🔐 Fonctionnement local avec ou sans API externes (OpenAI / HuggingFace)
 
 ---
 
@@ -23,9 +23,9 @@ Une IA locale modulaire capable de recevoir des instructions en langage naturel,
 
 ```
 chef_orchestre_ia/
-├── orchestrator.py             # Lancement agents via ligne de commande (optionnel)
-├── interface.py                # Point d'entrée principal avec interface web
-├── config.py                   # Chargement de clés .env
+├── orchestrator.py             # Lancement agents en CLI (optionnel)
+├── interface.py                # Interface web (point d'entrée recommandé)
+├── config.py                   # Chargement des clés .env
 ├── config_logger.py            # Configuration des logs
 ├── .env                        # Stockage des clés API
 ├── requirements.txt
@@ -42,46 +42,35 @@ chef_orchestre_ia/
 │   ├── api_liaison_agent.py
 │   ├── reuse_code_agent.py
 │   └── project_doctor_agent.py
-├── doctor_modules/            # Analyse & auto-fix
+├── doctor_modules/
 │   ├── analysis/
 │   ├── core/
 │   └── ...
 ├── frontend/
-│   └── interface.html          # Interface utilisateur complète
-├── backend/routes/
-│   └── routes.py               # API backend Flask
+│   └── interface.html           # Interface utilisateur
+├── backend/
+│   └── routes/
+│       └── routes.py            # API Flask
 └── test/
     └── test_api_routes.py
 ```
 
 ---
 
-## 🧪 Lancement
+## ▶️ Lancement
 
-### Interface web (recommandée)
-
+### 1. Installation des dépendances
 ```bash
-python interface.py
+pip install -r requirements.txt
 ```
 
-### Mode CLI (agents seuls)
-```bash
-python orchestrator.py
-```
-
----
-
-## 🔑 Configuration des clés API
-
+### 2. Configuration des clés API
 Créez un fichier `.env` à la racine :
-
-```
+```bash
 OPENAI_API_KEY=sk-...
 HUGGINGFACE_API_KEY=hf-...
 ```
-
-Dans `config.py`, activez les options souhaitées :
-
+Configurez ensuite `config.py` :
 ```python
 CONFIG = {
     "use_openai": True,
@@ -90,9 +79,15 @@ CONFIG = {
 }
 ```
 
+### 3. Lancement de l'application
+```bash
+python interface.py
+```
+Puis ouvrez votre navigateur à l'adresse : [http://localhost:5000](http://localhost:5000)
+
 ---
 
-## 🧠 Exemple de commandes utilisateur
+## 🧠 Exemples d’utilisation dans le chat
 
 > "Corrige tous les fichiers Python dans le projet"
 
@@ -100,7 +95,7 @@ CONFIG = {
 
 > "Crée un agent pour surveiller les dépendances de sécurité"
 
-> "Fais un programme de prise de rendez-vous chez le médecin automatiquement tous les mois"
+> "Fais un programme de prise de rendez-vous automatique chez le médecin"
 
 ---
 
@@ -119,10 +114,20 @@ CONFIG = {
 | Route           | Méthode | Description                             |
 |----------------|---------|-----------------------------------------|
 | `/run`         | POST    | Envoie une tâche à l'IA                  |
-| `/upload`      | POST    | Upload un fichier zip de projet         |
-| `/files`       | GET     | Liste des fichiers disponibles          |
+| `/upload`      | POST    | Upload d'un fichier zip de projet       |
+| `/files`       | GET     | Liste les fichiers disponibles          |
 | `/file`        | GET/POST| Lire / sauvegarder un fichier           |
 | `/toggle_pause`| POST    | Active / désactive le mode pause        |
+
+---
+
+## 📦 Développement local sans cloud
+
+Pour simuler les appels API sans internet :
+```bash
+export USE_REQUESTS_STUB=1
+```
+Prévoir un fichier `requests_stub.py` pour gérer les requêtes fictives.
 
 ---
 
