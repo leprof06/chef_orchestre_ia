@@ -5,26 +5,27 @@ import os
 if os.environ.get("USE_REQUESTS_STUB") == "1":
     try:
         import requests_stub as requests
-    except ModuleNotFoundError:  # pragma: no cover - stub missing
+    except ModuleNotFoundError:
         requests = None
 else:
     try:
         import requests
-    except ModuleNotFoundError:  # pragma: no cover - fallback to local stub
-        try:  # pragma: no cover - fallback path
+    except ModuleNotFoundError:
+        try:
             import requests_stub as requests
-        except ModuleNotFoundError:  # pragma: no cover - stub missing
+        except ModuleNotFoundError:
             requests = None
 
+from agents.base_agent import BaseAgent
 
-class APILiaisonAgent:
-    """Agent responsible for talking to external APIs."""
+class ExternalAPILiaisonAgent(BaseAgent):
+    """Agent responsible for querying external APIs (e.g., GitHub)."""
 
-    def __init__(self) -> None:
+    def __init__(self):
+        super().__init__("ExternalAPILiaisonAgent")
         self.logger = logging.getLogger(__name__)
 
     def search_github(self, query: str) -> List[str]:
-        """Search public GitHub repositories."""
         if requests is None:
             self.logger.error("La bibliothèque 'requests' n'est pas installée.")
             return []
@@ -36,6 +37,6 @@ class APILiaisonAgent:
             response.raise_for_status()
             data = response.json()
             return [item.get("full_name", "") for item in data.get("items", [])]
-        except Exception as exc:  # pragma: no cover - network call
+        except Exception as exc:
             self.logger.error("GitHub search failed: %s", exc)
             return []
