@@ -1,6 +1,6 @@
 
 import os
-from analysis.utils import is_code_file, extract_code_structure
+from doctor_modules.analysis.utils import is_code_file, extract_code_structure
 from detection.api_key_checker import check_api_keys
 from detection.dependency_checker import check_dependencies
 from detection.capability_detector import detect_capabilities
