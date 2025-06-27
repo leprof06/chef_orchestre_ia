@@ -1,26 +1,28 @@
-from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
-from agents.chef_agent import ChefOrchestreAgent
-from backend.routes.routes import register_all_routes
-import os
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chef d'Orchestre IA</title>
+</head>
+<body>
+    <h1>Bienvenue dans Chef d'Orchestre IA</h1>
+    <form id="task-form">
+        <input type="text" id="task" placeholder="Entrez une tâche...">
+        <button type="submit">Lancer</button>
+    </form>
+    <pre id="result"></pre>
 
-app = Flask(__name__, template_folder="frontend/templates")
-chef = ChefOrchestreAgent(agents={})
-
-@app.route("/")
-def index():
-    return render_template("interface.html")
-
-@app.route("/run", methods=["POST"])
-def run():
-    data = request.json
-    task = data.get("task")
-    if not task:
-        return jsonify({"error": "No task provided"}), 400
-    result = chef.handle_task(task)
-    return jsonify({"result": result})
-
-# Enregistre les autres routes
-register_all_routes(app)
-
-if __name__ == "__main__":
-    app.run(debug=True)
+    <script>
+        document.getElementById("task-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const task = document.getElementById("task").value;
+            const response = await fetch("/run", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ task })
+            });
+            const data = await response.json();
+            document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+        });
+    </script>
+</body>
+</html>
