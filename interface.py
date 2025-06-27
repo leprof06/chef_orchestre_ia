@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, send_from_directory
 import os
 from agents.chef_agent import ChefOrchestreAgent
-from doctor_modules.analysis.project_analyser import analyse_project
+from doctor_modules.analysis.project_analysis import analyse_project
 
 routes = Blueprint("routes", __name__)
 
