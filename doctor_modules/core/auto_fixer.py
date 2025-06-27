@@ -1,7 +1,7 @@
 import os
 import subprocess
 import logging
-from config.config import PROJECT_FOLDER
+from orchestrator import PROJECT_FOLDER
 from core.install_utils import check_and_install_packages
 from detection.capability_detector import detect_capabilities
 from analysis.utils import load_json_file

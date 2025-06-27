@@ -2,7 +2,7 @@
 from flask import Blueprint, redirect, url_for, render_template, flash
 import logging
 import os
-from config.config import PROJECT_FOLDER
+from orchestrator import PROJECT_FOLDER
 from core.install_utils import check_and_install_packages
 from core.safe_update import safe_apply_modification
 from core.services import generate_code_proposal

@@ -3,7 +3,7 @@ import logging
 from flask import Blueprint, render_template, request
 from pathlib import Path
 from detection.capability_detector import detect_capabilities
-from config.config import API_KEYS
+from config import API_KEYS
 
 routes_capabilities = Blueprint("capabilities", __name__)
 

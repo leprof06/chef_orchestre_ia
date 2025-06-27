@@ -1,7 +1,7 @@
 import os
 import logging
 from flask import Blueprint, render_template, request, session, redirect, url_for
-from config.config import PROJECT_FOLDER
+from orchestrator import PROJECT_FOLDER
 from routes.routes import application_data
 from core.history_manager import save_proposal
 from core.services import generate_code_proposal

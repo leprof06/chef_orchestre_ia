@@ -1,6 +1,6 @@
 import logging
 import shutil
-from config.config import PROJECT_FOLDER, README_PATH
+from orchestrator import PROJECT_FOLDER
 from core.history_manager import save_proposal
 from core.client import (
     query_huggingface_model,

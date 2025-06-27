@@ -2,7 +2,7 @@ import os
 import subprocess
 import logging
 from flask import Blueprint, render_template, request
-from config.config import PROJECT_FOLDER
+from orchestrator import PROJECT_FOLDER
 
 install_routes = Blueprint("install_dependencies", __name__)
 

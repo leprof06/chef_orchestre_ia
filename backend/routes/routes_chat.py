@@ -2,7 +2,7 @@ import logging
 import shutil
 import openai
 from flask import Blueprint, request, render_template, session
-from config.config import PROJECT_FOLDER, README_PATH, OPENAI_API_KEY, HUGGINGFACE_API_KEY, MISTRAL_API_KEY, get_best_available_model
+from config import README_PATH, OPENAI_API_KEY, HUGGINGFACE_API_KEY, MISTRAL_API_KEY, get_best_available_model
 from core.history_manager import save_proposal, load_history
 from core.client import query_huggingface_model, query_openai_model, query_cohere_model
 from detection.capability_detector import detect_capabilities

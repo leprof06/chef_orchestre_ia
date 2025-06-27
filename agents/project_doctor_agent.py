@@ -1,7 +1,6 @@
 # agents/project_doctor_agent.py
-
 from agents.base_agent import BaseAgent
-from doctor_modules.analysis.project_analysis import analyze_project
+from doctor_modules.analysis.code_utils import is_code_file, extract_code_structure
 from doctor_modules.core.auto_fixer import auto_fix_project
 from doctor_modules.generation.generate_global_report import generate_global_report
 from config_logger import get_logger

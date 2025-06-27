@@ -4,7 +4,7 @@ import os
 from generation.generate_global_report import scan_and_generate_report
 from core.history_manager import load_history, save_proposal
 from core.safe_update import safe_apply_modification
-from config.config import PROJECT_FOLDER
+from orchestrator import PROJECT_FOLDER
 from core.services import generate_code_proposal
 
 analyze_full = Blueprint("analyze_full", __name__)

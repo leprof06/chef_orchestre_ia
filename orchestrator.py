@@ -1,6 +1,9 @@
-# orchestrator.py
 import sys
 import os
+from dotenv import load_dotenv
+from tkinter import Tk, filedialog
+
+# Ajout du répertoire du projet au sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from agents.chef_agent import ChefOrchestreAgent
@@ -17,9 +20,32 @@ from agents.reuse_code_agent import ReuseCodeAgent
 from agents.project_doctor_agent import ProjectDoctorAgent
 from config_logger import get_logger
 
+# Chargement de .env
+load_dotenv()
+
 logger = get_logger(__name__)
 
+# Définition globale (visible par les modules importés ensuite)
+PROJECT_FOLDER = None
+
+def select_project_folder():
+    """Ouvre une fenêtre pour sélectionner un dossier."""
+    root = Tk()
+    root.withdraw()
+    folder = filedialog.askdirectory(title="Choisissez le dossier du projet à analyser")
+    return folder if folder else os.getenv("DEFAULT_PROJECT_FOLDER")
+
 def main():
+    global PROJECT_FOLDER
+    logger.info("Sélection du dossier à analyser...")
+    PROJECT_FOLDER = select_project_folder()
+
+    if not PROJECT_FOLDER or not os.path.isdir(PROJECT_FOLDER):
+        logger.error("❌ Dossier non valide.")
+        return
+
+    logger.info(f"📁 Dossier sélectionné : {PROJECT_FOLDER}")
+
     logger.info("Initialisation des agents...")
     agents = {
         "CodeAgent": CodeAgent(),
