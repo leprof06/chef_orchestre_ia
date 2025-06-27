@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify
 from agents.chef_agent import ChefOrchestreAgent
 from backend.routes.routes import register_all_routes
 import os
@@ -32,32 +32,32 @@ def toggle_pause():
 
 @app.route("/files")
 def list_files():
-    files = []
-    for root, _, filenames in os.walk("."):
-        for f in filenames:
-            if f.endswith(".py") and "__pycache__" not in root:
-                path = os.path.join(root, f).replace("\\", "/")
-                files.append(path[2:] if path.startswith("./") else path)
-    return jsonify({"files": files})
+    file_list = []
+    for root, dirs, files in os.walk("."):
+        for file in files:
+            if file.endswith(".py"):
+                full_path = os.path.join(root, file)
+                file_list.append(os.path.relpath(full_path))
+    return jsonify(file_list)
 
-@app.route("/file", methods=["GET"])
-def read_file():
+@app.route("/file")
+def get_file():
     path = request.args.get("path")
-    if not path or not os.path.isfile(path):
-        return jsonify({"error": "Invalid file path."}), 400
+    if not path or not os.path.exists(path):
+        return jsonify({"error": "Invalid file path"}), 400
     with open(path, "r", encoding="utf-8") as f:
         return jsonify({"content": f.read()})
 
 @app.route("/file", methods=["POST"])
-def write_file():
+def save_file():
     data = request.json
     path = data.get("path")
     content = data.get("content")
-    if not path or not os.path.isfile(path):
-        return jsonify({"error": "Invalid file path."}), 400
+    if not path:
+        return jsonify({"error": "Path required"}), 400
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
-    return jsonify({"success": True})
+    return jsonify({"result": "Fichier sauvegardé avec succès"})
 
 # Enregistre toutes les routes supplémentaires
 register_all_routes(app)
