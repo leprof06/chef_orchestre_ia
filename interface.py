@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from agents.chef_agent import ChefOrchestreAgent
 from backend.routes.routes import register_all_routes
 import os
@@ -29,6 +29,35 @@ def toggle_pause():
     global is_paused
     is_paused = not is_paused
     return jsonify({"paused": is_paused})
+
+@app.route("/files")
+def list_files():
+    files = []
+    for root, _, filenames in os.walk("."):
+        for f in filenames:
+            if f.endswith(".py") and "__pycache__" not in root:
+                path = os.path.join(root, f).replace("\\", "/")
+                files.append(path[2:] if path.startswith("./") else path)
+    return jsonify({"files": files})
+
+@app.route("/file", methods=["GET"])
+def read_file():
+    path = request.args.get("path")
+    if not path or not os.path.isfile(path):
+        return jsonify({"error": "Invalid file path."}), 400
+    with open(path, "r", encoding="utf-8") as f:
+        return jsonify({"content": f.read()})
+
+@app.route("/file", methods=["POST"])
+def write_file():
+    data = request.json
+    path = data.get("path")
+    content = data.get("content")
+    if not path or not os.path.isfile(path):
+        return jsonify({"error": "Invalid file path."}), 400
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(content)
+    return jsonify({"success": True})
 
 # Enregistre toutes les routes supplémentaires
 register_all_routes(app)

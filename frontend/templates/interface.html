@@ -5,47 +5,37 @@
   <title>Chef d'Orchestre IA</title>
   <style>
     body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 2em; }
-    .container { background: white; padding: 2em; border-radius: 8px; max-width: 800px; margin: auto; }
+    .container { background: white; padding: 2em; border-radius: 8px; max-width: 1000px; margin: auto; }
     #chat { border: 1px solid #ccc; padding: 1em; height: 300px; overflow-y: scroll; margin-bottom: 1em; background: #fafafa; }
     .message { margin-bottom: 0.5em; }
     .user { font-weight: bold; color: #333; }
     .bot { color: #007BFF; }
     .btns { margin-bottom: 1em; }
-    #status { font-size: 0.9em; color: green; margin-bottom: 1em; }
+    #fileList { margin-top: 1em; max-height: 200px; overflow-y: scroll; background: #f0f0f0; padding: 1em; border: 1px solid #ccc; }
+    textarea { width: 100%; height: 300px; margin-top: 1em; }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>👋 Bonjour ! Sur quoi travaillons-nous aujourd'hui ?</h2>
-    <div id="status">⏺ Statut : actif</div>
     <div class="btns">
       <input type="file" id="projectFile" />
       <button onclick="uploadProject()">Analyser un projet</button>
-      <button onclick="togglePause()" id="pauseBtn">⏸ Mettre en pause</button>
-      <button onclick="startNewProject()">✨ Nouveau projet</button>
+      <button onclick="togglePause()">Pause / Play</button>
     </div>
     <div id="chat"></div>
     <input type="text" id="userInput" placeholder="Décrivez votre projet ici..." style="width: 80%;" />
     <button onclick="sendMessage()">Envoyer</button>
+
+    <h3>🗂 Fichiers disponibles</h3>
+    <div id="fileList"></div>
+    <h3>📄 Éditeur de fichier</h3>
+    <select id="fileSelector" onchange="loadFile()"></select>
+    <textarea id="fileEditor"></textarea>
+    <button onclick="saveFile()">💾 Sauvegarder les modifications</button>
   </div>
 
   <script>
-    let isPaused = false;
-
-    function updateStatus() {
-      const status = document.getElementById("status");
-      const pauseBtn = document.getElementById("pauseBtn");
-      if (isPaused) {
-        status.textContent = "⏸ Statut : en pause";
-        status.style.color = "orange";
-        pauseBtn.textContent = "▶ Reprendre";
-      } else {
-        status.textContent = "⏺ Statut : actif";
-        status.style.color = "green";
-        pauseBtn.textContent = "⏸ Mettre en pause";
-      }
-    }
-
     function appendMessage(sender, text) {
       const chat = document.getElementById("chat");
       const div = document.createElement("div");
@@ -86,23 +76,49 @@
     }
 
     function togglePause() {
-      fetch("/toggle_pause", {
-        method: "POST"
+      fetch("/toggle_pause", { method: "POST" })
+        .then(res => res.json())
+        .then(data => appendMessage("bot", `⏸ Pause ${data.paused ? 'activée' : 'désactivée'}`));
+    }
+
+    function loadFileList() {
+      fetch("/files")
+        .then(res => res.json())
+        .then(data => {
+          const selector = document.getElementById("fileSelector");
+          selector.innerHTML = "";
+          data.files.forEach(f => {
+            const option = document.createElement("option");
+            option.value = f;
+            option.textContent = f;
+            selector.appendChild(option);
+          });
+          if (data.files.length) loadFile();
+        });
+    }
+
+    function loadFile() {
+      const file = document.getElementById("fileSelector").value;
+      fetch(`/file?path=${encodeURIComponent(file)}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("fileEditor").value = data.content || "";
+        });
+    }
+
+    function saveFile() {
+      const file = document.getElementById("fileSelector").value;
+      const content = document.getElementById("fileEditor").value;
+      fetch("/file", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: file, content })
       })
       .then(res => res.json())
-      .then(data => {
-        isPaused = data.paused;
-        updateStatus();
-      });
+      .then(data => appendMessage("bot", data.result || "Sauvegarde réussie."));
     }
 
-    function startNewProject() {
-      appendMessage("user", "Je veux créer un nouveau projet.");
-      sendMessage();
-    }
-
-    // Initialisation
-    updateStatus();
+    window.onload = loadFileList;
   </script>
 </body>
 </html>
