@@ -1,15 +1,15 @@
 from managers.base_manager import BaseManager
-from agents.code_generator_agent import CodeGeneratorAgent
-from agents.code_optimizer_agent import CodeOptimizerAgent
-from agents.code_debugger_agent import CodeDebuggerAgent
+from agents.code_agent import CodeAgent
+from agents.optimize_agent import OptimizeAgent
+from agents.debug_agent import DebugAgent
 
 class ChefCodeManager(BaseManager):
     def __init__(self):
         super().__init__("ChefCodeManager")
         self.agents = {
-            "code_generator": CodeGeneratorAgent(),
-            "code_optimizer": CodeOptimizerAgent(),
-            "code_debugger": CodeDebuggerAgent()
+            "code_generator": CodeAgent(),
+            "code_optimizer": OptimizeAgent(),
+            "code_debugger": DebugAgent()
         }
 
     def dispatch(self, task):
