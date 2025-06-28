@@ -1,0 +1,4 @@
+2025-06-28 12:02:27,523 [WARNING] werkzeug:  * Debugger is active!
+2025-06-28 12:02:27,528 [INFO] werkzeug:  * Debugger PIN: 540-009-229
+2025-06-28 12:02:36,707 [INFO] werkzeug: 127.0.0.1 - - [28/Jun/2025 12:02:36] "GET / HTTP/1.1" 200 -
+2025-06-28 12:02:37,275 [INFO] werkzeug: 127.0.0.1 - - [28/Jun/2025 12:02:37] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
