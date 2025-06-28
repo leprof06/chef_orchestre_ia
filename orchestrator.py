@@ -6,61 +6,58 @@ from managers.chef_ux_manager import ChefUXManager
 
 class Orchestrator:
     def __init__(self):
-        # Instancie tes managers ici
         self.logs = []
         self.code_state = ""
-        # Exemples de managers, adapte selon ton archi :
-        # self.analyse_manager = AnalyseManager()
-        # self.dev_manager = DevManager()
-        # self.code_manager = CodeManager()
-        # self.rh_manager = RHManager()
-        # etc.
+        # Instancie tous tes managers personnalisés
+        self.analyse_manager = ChefAnalyseManager()
+        self.code_manager = ChefCodeManager()
+        self.dev_manager = ChefDevOpsManager()
+        self.rh_manager = ChefRHManager()
+        self.ux_manager = ChefUXManager()
 
     def init_new_project(self):
         """Initialise un projet vierge."""
         self.logs = ["Projet vierge créé."]
-        self.code_state = ""  # ou une structure par défaut
-        # Appelle les managers pour préparer le projet si besoin
+        self.code_state = "# Nouveau projet Python\n"
+        # Option : tu peux appeler ici des méthodes de manager si besoin
 
     def init_from_zip(self, zip_path):
         """Initialise le projet à partir d'un zip uploadé."""
-        # Ici tu fais ce qu’il faut : extraction, analyse initiale, etc.
+        # Place ici ton extraction/initialisation réelle si besoin
         self.logs = [f"Projet chargé depuis {zip_path}."]
-        self.code_state = ""  # À mettre à jour selon le contenu du zip
-        # Tu peux lancer une analyse rapide automatique ici si besoin
+        self.code_state = "# Code extrait du ZIP (simulé)\n"
 
     def get_logs(self):
-        """Retourne la liste (ou string) des logs à afficher sur le front."""
+        """Retourne les logs à afficher dans la timeline frontend."""
         return self.logs
 
     def get_code_state(self):
-        """Retourne le code à afficher dans la zone code du front."""
+        """Retourne le code du projet courant à afficher (peut être enrichi)."""
         return self.code_state
 
     def analyse_project(self, project_path):
-        """Appelle l’agent d’analyse via le manager, enregistre les logs."""
-        # Appelle ton AnalyseManager/agent ici
-        result = "Analyse terminée avec succès."  # ou résultat réel
+        """Appelle l’agent d’analyse via le manager et ajoute le log."""
+        result = self.analyse_manager.handle("analyse_code", project_path)
         self.logs.append(result)
         return result
 
     def dispatch_task(self, task):
-        """Redirige la tâche vers le bon manager/agent."""
-        # Ce code existait déjà chez toi : tu routes vers le bon agent selon le type de task
-        # Ex :
+        """Router une tâche vers le bon manager/agent."""
         manager = task.get("manager")
         action_type = task.get("type")
         project_path = task.get("project_path")
-        # Tu routes ici (exemple) :
+        # Appelle le bon manager selon le mapping
         if manager == "analyse":
-            # res = self.analyse_manager.handle(action_type, project_path)
-            res = f"Analyse demandée : {action_type} sur {project_path}"
+            res = self.analyse_manager.handle(action_type, project_path)
         elif manager == "code":
-            # res = self.code_manager.handle(action_type, project_path)
-            res = f"Code demandé : {action_type} sur {project_path}"
-        # etc.
+            res = self.code_manager.handle(action_type, project_path)
+        elif manager == "devops":
+            res = self.dev_manager.handle(action_type, project_path)
+        elif manager == "rh":
+            res = self.rh_manager.handle(action_type, project_path)
+        elif manager == "ux":
+            res = self.ux_manager.handle(action_type, project_path)
         else:
-            res = f"Tâche inconnue : {manager}/{action_type}"
-        self.logs.append(str(res))
+            res = f"[Orchestrator] Tâche inconnue : {manager}/{action_type}"
+        self.logs.append(res)
         return {"result": res}
-    
