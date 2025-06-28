@@ -38,8 +38,12 @@ class Orchestrator:
     def analyse_project(self, project_path):
         """Appelle l’agent d’analyse via le manager et ajoute le log."""
         result = self.analyse_manager.handle("analyse_code", project_path)
-        self.logs.append(result)
-        return result
+        if isinstance(result, dict):
+            log_line = result.get("result") or str(result)
+        else:
+            log_line = str(result)
+        self.logs.append(f"Analyse du projet : {log_line}")
+        return log_line
 
     def dispatch_task(self, task):
         """Router une tâche vers le bon manager/agent."""

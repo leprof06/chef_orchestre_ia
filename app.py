@@ -61,12 +61,11 @@ def chat_projet():
     return render_template("chat.html", show_analyse_btn=show_analyse, logs=logs, code=code)
 
 @app.route("/analyser", methods=["POST"])
-def analyser_projet():
-    # Appel explicite à l’AnalyseManager/agent via orchestrator
+def analyser():
     project_path = session.get('current_project')
     result = orchestrator.analyse_project(project_path)
-    flash("Analyse terminée." if result else "Erreur lors de l'analyse.")
-    return redirect(url_for('chat_projet'))
+    logs = orchestrator.get_logs()
+    return jsonify({"logs": "\n".join(logs) if logs else "Aucun log généré"})
 
 def parse_user_input(user_input, project_path=None):
     # … (copie ton code de mapping demande → agent/manager)
