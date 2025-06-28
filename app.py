@@ -1,6 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import os
 from werkzeug.utils import secure_filename
+from orchestrator import Orchestrator
+
+orchestrator = Orchestrator()
 
 # Configuration
 UPLOAD_FOLDER = os.path.join('workspace', 'uploads')
@@ -68,6 +71,43 @@ def analyser_projet():
     # Ici on branchera l'appel à l'agent d'analyse IA
     flash("Fonction d'analyse en cours de développement.")
     return redirect(url_for('chat_projet'))
+
+# Pour le parsing, tu peux reprendre ta fonction existante
+def parse_user_input(user_input, project_path=None):
+    user_input = user_input.lower()
+    if "analyse" in user_input or "scanner" in user_input:
+        return {"manager": "analyse", "type": "analyse_code", "project_path": project_path}
+    elif "clé api" in user_input or "api key" in user_input:
+        return {"manager": "analyse", "type": "detect_api_keys", "project_path": project_path}
+    elif "dépendance" in user_input or "requirement" in user_input:
+        return {"manager": "devops", "type": "manage_dependencies", "project_path": project_path}
+    elif "génère" in user_input or "écris" in user_input:
+        return {"manager": "code", "type": "generate_code", "project_path": project_path}
+    elif "optimise" in user_input:
+        return {"manager": "code", "type": "optimize_code", "project_path": project_path}
+    elif "debug" in user_input or "corrige" in user_input:
+        return {"manager": "code", "type": "debug_code", "project_path": project_path}
+    elif "agent" in user_input and "crée" in user_input:
+        return {"manager": "rh", "type": "create_agent"}
+    elif "manager" in user_input and "crée" in user_input:
+        return {"manager": "rh", "type": "create_manager"}
+    elif "interface" in user_input or "ui" in user_input:
+        return {"manager": "ux", "type": "analyze_ui", "project_path": project_path}
+    else:
+        return {"manager": "analyse", "type": "analyse_code", "project_path": project_path, "note": "🔍 Interprétation approximative"}
+
+# === API chat AJAX ===
+@app.route("/api/chat", methods=["POST"])
+def api_chat():
+    data = request.get_json()
+    user_input = data.get("message")
+    project_path = data.get("project_path", None)
+    if not user_input:
+        return jsonify({"error": "Message vide"}), 400
+
+    task = parse_user_input(user_input, project_path)
+    result = orchestrator.dispatch_task(task)
+    return jsonify(result)
 
 # --- MAIN ---
 if __name__ == "__main__":
