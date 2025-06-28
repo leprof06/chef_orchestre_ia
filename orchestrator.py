@@ -36,13 +36,16 @@ class Orchestrator:
         return self.code_state
 
     def analyse_project(self, project_path):
-        """Appelle l’agent d’analyse via le manager et ajoute le log."""
         result = self.analyse_manager.handle("analyse_code", project_path)
+        # Si c’est un dict, formatte pour l’affichage :
         if isinstance(result, dict):
-            log_line = result.get("result") or str(result)
+            lines = []
+            for key, value in result.items():
+                lines.append(f"{key} : {value}")
+            log_line = "Analyse du projet :\n" + "\n".join(lines)
         else:
-            log_line = str(result)
-        self.logs.append(f"Analyse du projet : {log_line}")
+            log_line = f"Analyse du projet : {result}"
+        self.logs.append(log_line)
         return log_line
 
     def dispatch_task(self, task):
