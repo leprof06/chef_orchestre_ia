@@ -2,21 +2,18 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 import os
 from werkzeug.utils import secure_filename
 
-# -- Orchestrator IA --
 from orchestrator import Orchestrator
-orchestrator = Orchestrator()
 
+orchestrator = Orchestrator()
 UPLOAD_FOLDER = os.path.join('workspace', 'uploads')
 ALLOWED_EXTENSIONS = {'zip'}
 
 app = Flask(__name__)
-app.secret_key = 'dev-secret-1234'  # à personnaliser
+app.secret_key = 'dev-secret-1234'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-# === PAGES HTML ===
 
 @app.route("/")
 def index():
@@ -24,10 +21,12 @@ def index():
 
 @app.route("/nouveau-projet")
 def nouveau_projet():
-    # Projet vierge : pas d'upload, pas de bouton analyse
+    # Orchestrator : création d’un projet vierge
+    session.pop('current_project', None)
+    orchestrator.init_new_project()
     return render_template("chat.html", show_analyse_btn=False)
 
-@app.route("/projet-existant", methods=["GET"])
+@app.route("/projet-existant")
 def projet_existant():
     return render_template("choose_project.html")
 
@@ -46,6 +45,8 @@ def upload_projet_existant():
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
         file.save(save_path)
         session['current_project'] = save_path
+        # Orchestrator : initialisation depuis le zip
+        orchestrator.init_from_zip(save_path)
         return redirect(url_for('chat_projet'))
     else:
         flash("Fichier non valide (format attendu : .zip)")
@@ -54,17 +55,22 @@ def upload_projet_existant():
 @app.route("/chat")
 def chat_projet():
     show_analyse = bool(session.get('current_project'))
-    return render_template("chat.html", show_analyse_btn=show_analyse)
+    # Tu peux afficher des logs/codes initiaux ici
+    logs = orchestrator.get_logs()
+    code = orchestrator.get_code_state()
+    return render_template("chat.html", show_analyse_btn=show_analyse, logs=logs, code=code)
 
 @app.route("/analyser", methods=["POST"])
 def analyser_projet():
-    # Appel IA pour analyse (à compléter)
-    flash("Fonction d'analyse en cours de développement.")
+    # Appel explicite à l’AnalyseManager/agent via orchestrator
+    project_path = session.get('current_project')
+    result = orchestrator.analyse_project(project_path)
+    flash("Analyse terminée." if result else "Erreur lors de l'analyse.")
     return redirect(url_for('chat_projet'))
 
-# === API CHAT AJAX ===
-
 def parse_user_input(user_input, project_path=None):
+    # … (copie ton code de mapping demande → agent/manager)
+    # inchangé
     user_input = user_input.lower()
     if "analyse" in user_input or "scanner" in user_input:
         return {"manager": "analyse", "type": "analyse_code", "project_path": project_path}
@@ -94,7 +100,6 @@ def api_chat():
     project_path = session.get('current_project', None)
     if not user_input:
         return jsonify({"error": "Message vide"}), 400
-
     task = parse_user_input(user_input, project_path)
     result = orchestrator.dispatch_task(task)
     return jsonify(result)
