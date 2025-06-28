@@ -3,7 +3,7 @@
 import logging
 import base64
 from typing import Dict
-from .api_liaison_agent import APILiaisonAgent
+from .api_key_scanner_agent import APIKeyScannerAgent
 from config_logger import get_logger
 import os
 
