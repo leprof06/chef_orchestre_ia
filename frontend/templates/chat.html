@@ -1,55 +1,97 @@
+<!-- frontend/templates/chat.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Chat avec l'IA</title>
+    <title>Chef d'Orchestre IA - Projet</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body { font-family: Arial, sans-serif; margin: 2em; }
-        .chatbox { max-width: 800px; margin: auto; }
-        .message { padding: 1em; margin-bottom: 1em; border-radius: 10px; }
-        .user { background-color: #d0ebff; text-align: right; }
-        .ai { background-color: #e6ffe6; text-align: left; }
-        form { display: flex; margin-top: 2em; }
-        input[type="text"] { flex: 1; padding: 1em; font-size: 1em; }
-        button { padding: 1em; }
+        html, body { margin:0; padding:0; min-height:100vh; font-family:'Segoe UI',Arial,sans-serif; background:linear-gradient(120deg,#f5f7fa 0%,#c3cfe2 100%);}
+        .app-main { display: flex; flex-direction: column; height: 100vh; }
+        .header { padding: 1.3em 2em 0.5em 2em; font-size: 1.17em; color: #5a6789; background: #fff; border-bottom: 1px solid #eceffa;}
+        .main-content { display: flex; flex:1; min-height:0;}
+        .timeline-panel { flex:1.1; padding: 1.7em 1em 1.1em 1.8em; background:#fafbfe; overflow-y:auto; border-right:1.5px solid #ecf1fa;}
+        .timeline-title { font-weight: 600; color:#2f355a; margin-bottom:0.7em; }
+        .timeline-logs { font-size: 0.98em; color: #43506a; line-height: 1.7; }
+        .code-panel { flex:1.2; padding: 1.5em 1.6em 1.1em 1.2em; background:#fff; display:flex; flex-direction:column; min-width:0;}
+        .code-header { display:flex; align-items:center; margin-bottom:0.7em;}
+        .code-header span { flex:1; font-weight:600; color:#415;}
+        .code-controls { display:flex; gap:0.7em;}
+        .code-btn { font-size:1em; padding:0.45em 1.3em; border:none; border-radius:10px; background:linear-gradient(90deg,#355C7D 0%,#6C5B7B 100%); color:#fff; font-weight:500; cursor:pointer; transition:background 0.18s;}
+        .code-btn[disabled] { opacity:0.55; cursor:not-allowed;}
+        .code-view { flex:1; background:#f8f8fc; border-radius:10px; padding:1em; font-family: 'Fira Mono', 'Consolas', monospace; font-size:1em; overflow:auto; margin-bottom:0.5em;}
+        .chat-panel { width:100%; background: #f1f3f7; border-top:1px solid #e1e7f2; padding:0.9em 1.5em;}
+        .chat-form { display:flex; gap:0.9em;}
+        .chat-input { flex:1; font-size:1em; border-radius: 12px; border:1.2px solid #d6daf0; padding: 0.77em 1em;}
+        .chat-send { font-size:1.02em; border:none; border-radius:10px; background:linear-gradient(90deg,#355C7D 0%,#6C5B7B 100%); color:#fff; font-weight:500; padding:0.7em 1.6em; cursor:pointer;}
+        .analyse-btn { margin-bottom:1.2em; background:linear-gradient(90deg,#F7971E 0%,#FFD200 100%); color:#444; border:none; border-radius:10px; font-weight:500; padding:0.48em 1.3em; cursor:pointer;}
+        @media (max-width:950px){
+            .main-content{ flex-direction:column;}
+            .timeline-panel, .code-panel { flex:none; width:100%;}
+            .timeline-panel{border-right:none; border-bottom:1.5px solid #ecf1fa;}
+        }
     </style>
 </head>
 <body>
-<div class="chatbox">
-    <h1>💬 Conversation avec l'IA</h1>
-
-    <div id="chat-history">
-        {% for entry in history %}
-            <div class="message user"><strong>Vous :</strong><br>{{ entry.user }}</div>
-            <div class="message ai"><strong>IA :</strong><br>{{ entry.response }}</div>
-        {% endfor %}
+    <div class="app-main">
+        <div class="header">
+            <b>Chef d'Orchestre IA</b> &nbsp;—&nbsp; <span id="project-title">Projet en cours</span>
+        </div>
+        <div class="main-content">
+            <section class="timeline-panel">
+                <div class="timeline-title">Étapes & Logs Orchestrateur</div>
+                <div class="timeline-logs" id="timelineLogs">
+                    <!-- Les logs/interventions agents s’affichent ici dynamiquement -->
+                </div>
+                <!-- Le bouton "Analyser" n’est visible que pour les projets existants -->
+                {% if show_analyse_btn %}
+                    <form method="post" action="{{ url_for('analyser_projet') }}">
+                        <button class="analyse-btn" type="submit">Analyser le projet</button>
+                    </form>
+                {% endif %}
+            </section>
+            <section class="code-panel">
+                <div class="code-header">
+                    <span>Zone de code</span>
+                    <div class="code-controls">
+                        <button id="pauseBtn" class="code-btn" type="button">Pause</button>
+                        <button id="playBtn" class="code-btn" type="button" disabled>Play</button>
+                    </div>
+                </div>
+                <div class="code-view" id="codeView" contenteditable="false">
+                    <!-- Code affiché ici, édition possible seulement si "Pause" -->
+                </div>
+            </section>
+        </div>
+        <div class="chat-panel">
+            <form class="chat-form" id="chatForm" action="{{ url_for('envoyer_message_chat') }}" method="post" autocomplete="off">
+                <input class="chat-input" id="chatInput" name="message" type="text" placeholder="Décrivez ce que vous souhaitez faire..." required autocomplete="off"/>
+                <button class="chat-send" type="submit">Envoyer</button>
+            </form>
+        </div>
     </div>
+    <script>
+        // Contrôle Pause/Play
+        const pauseBtn = document.getElementById('pauseBtn');
+        const playBtn = document.getElementById('playBtn');
+        const codeView = document.getElementById('codeView');
+        let isPaused = false;
 
-    <form id="chat-form">
-        <input type="text" name="user_input" id="user_input" placeholder="Tape ton message ici..." required>
-        <button type="submit">Envoyer</button>
-    </form>
-</div>
+        pauseBtn.onclick = function() {
+            codeView.contentEditable = "true";
+            isPaused = true;
+            pauseBtn.disabled = true;
+            playBtn.disabled = false;
+        };
+        playBtn.onclick = function() {
+            codeView.contentEditable = "false";
+            isPaused = false;
+            pauseBtn.disabled = false;
+            playBtn.disabled = true;
+            // Ici tu appelleras une API pour envoyer le code modifié à l’agent IA si besoin
+        };
 
-<script>
-    const form = document.getElementById('chat-form');
-    form.addEventListener('submit', async function(event) {
-        event.preventDefault();
-        const input = document.getElementById('user_input');
-        const message = input.value;
-        const formData = new FormData();
-        formData.append("user_input", message);
-
-        const response = await fetch("/chat", {
-            method: "POST",
-            body: formData
-        });
-
-        const html = await response.text();
-        document.open();
-        document.write(html);
-        document.close();
-    });
-</script>
+        // Ici tu complèteras l’affichage des logs dynamiquement, l’envoi chat, etc.
+    </script>
 </body>
 </html>

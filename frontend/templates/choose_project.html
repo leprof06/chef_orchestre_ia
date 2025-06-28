@@ -1,68 +1,61 @@
+<!-- frontend/templates/choose_project.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>📁 Choisir un projet</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      padding: 2em;
-      max-width: 800px;
-      margin: auto;
-    }
-    h1 {
-      color: #333;
-      text-align: center;
-    }
-    form {
-      background: #fff;
-      padding: 2em;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 0.5em;
-    }
-    select, button {
-      width: 100%;
-      padding: 0.75em;
-      margin-top: 1em;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-    button {
-      background-color: #0366d6;
-      color: white;
-      font-weight: bold;
-      border: none;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #024f9c;
-    }
-    a {
-      display: block;
-      margin-top: 2em;
-      text-align: center;
-      color: #0366d6;
-      text-decoration: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Importer un projet existant - Chef d'Orchestre IA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        html, body { min-height: 100vh; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(120deg, #e0eafc 0%, #cfdef3 100%);}
+        .container { max-width: 500px; margin: 8vh auto 0 auto; background: #fff; border-radius: 18px; box-shadow: 0 6px 32px rgba(70,100,200,0.11); padding: 2.8rem 2.2rem 2.3rem 2.2rem; text-align: center;}
+        h1 { font-size: 1.55rem; color: #355c7d; font-weight: 600; margin-bottom: 1.2em;}
+        .subtitle { color: #6074a8; font-size: 1.09rem; margin-bottom: 1.9em;}
+        .drop-zone { background: #f3f5fa; border: 2px dashed #a7b8d8; border-radius: 14px; padding: 2.4em 1em; margin-bottom: 1.3em; transition: border 0.18s;}
+        .drop-zone.dragover { border-color: #6c5b7b; background: #e9e7f8;}
+        .drop-zone input[type="file"] { display: none;}
+        .upload-btn { margin-top: 1.5em; font-size: 1.1rem; font-weight: 500; border-radius: 13px; border: none; outline: none; background: linear-gradient(90deg, #355C7D 0%, #6C5B7B 100%); color: #fff; padding: 0.82em 2.3em; cursor: pointer;}
+        .upload-btn:hover { background: linear-gradient(90deg, #6C5B7B 0%, #355C7D 100%);}
+        .back-link { display: block; margin-top: 2.4em; color: #6c5b7b; text-decoration: none; font-size: 0.99em;}
+    </style>
 </head>
 <body>
-  <h1>📁 Sélection du projet à analyser</h1>
-  <form method="post">
-    <label for="project">Choisissez un projet :</label>
-    <select name="project" id="project" required>
-      {% for project in project_list %}
-        <option value="{{ project }}" {% if project == selected_project %}selected{% endif %}>{{ project }}</option>
-      {% endfor %}
-    </select>
-    <button type="submit">Analyser ce projet</button>
-  </form>
-  <a href="/">⬅️ Retour à l’accueil</a>
+    <div class="container">
+        <h1>Importer un projet existant</h1>
+        <div class="subtitle">
+            Glissez-déposez un fichier ZIP de votre projet ou cliquez pour le sélectionner.<br>
+            <small>(Formats acceptés : <strong>.zip</strong>)</small>
+        </div>
+        <form id="uploadForm" action="{{ url_for('upload_projet_existant') }}" method="post" enctype="multipart/form-data">
+            <label for="projectZip" class="drop-zone" id="dropZone">
+                <span id="dropZoneText">Déposez votre fichier ici ou cliquez pour parcourir…</span>
+                <input type="file" id="projectZip" name="project_zip" accept=".zip" required>
+            </label>
+            <button type="submit" class="upload-btn">Envoyer le projet</button>
+        </form>
+        <a href="{{ url_for('index') }}" class="back-link">← Retour à l'accueil</a>
+    </div>
+    <script>
+        // Drag & drop UX
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('projectZip');
+        const dropZoneText = document.getElementById('dropZoneText');
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', (e) => { dropZone.classList.remove('dragover'); });
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault(); dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                dropZoneText.textContent = "Fichier sélectionné : " + e.dataTransfer.files[0].name;
+            }
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (fileInput.files.length) {
+                dropZoneText.textContent = "Fichier sélectionné : " + fileInput.files[0].name;
+            } else {
+                dropZoneText.textContent = "Déposez votre fichier ici ou cliquez pour parcourir…";
+            }
+        });
+    </script>
 </body>
 </html>
