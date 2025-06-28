@@ -1,6 +1,5 @@
 from managers.base_manager import BaseManager 
 from agents.data_analysis_agent import DataAnalysisAgent
-from agents.project_scanner_agent import GlobalProjectScanAgent
 from agents.api_key_scanner_agent import APIKeyScannerAgent
 
 class ChefAnalyseManager(BaseManager):
@@ -8,7 +7,6 @@ class ChefAnalyseManager(BaseManager):
         super().__init__("ChefAnalyseManager")
         self.agents = {
             "data_analysis": DataAnalysisAgent(),
-            "global_scan": GlobalProjectScanAgent(),
             "api_key_scanner": APIKeyScannerAgent()
         }
 

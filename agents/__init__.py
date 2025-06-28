@@ -1,1 +1,2 @@
+from .api_key_scanner_agent import APIKeyScannerAgent
 from .reuse_code_agent import ReuseCodeAgent

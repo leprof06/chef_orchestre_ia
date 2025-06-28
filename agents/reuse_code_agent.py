@@ -22,9 +22,9 @@ else:
             requests = None
 
 class ReuseCodeAgent:
-    def __init__(self, api_agent: APILiaisonAgent | None = None) -> None:
+    def __init__(self, api_agent: APIKeyScannerAgent | None = None) -> None:
         self.logger = get_logger(__name__)
-        self.api_agent = api_agent or APILiaisonAgent()
+        self.api_agent = api_agent or APIKeyScannerAgent()
 
     def handle_task(self, query: str) -> str | None:
         if requests is None:
