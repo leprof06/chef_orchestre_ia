@@ -6,8 +6,8 @@ class BaseAgent:
     Fournit une interface commune pour l'exécution.
     """
 
-    def __init__(self):
-        pass
+    def __init__(self, name="BaseAgent"):
+        self.name = name
 
     def run(self, *args, **kwargs):
         """
