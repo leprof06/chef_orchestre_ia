@@ -17,3 +17,7 @@ class ChefRHManager(BaseManager):
             return self.agents["factory"].create_manager(task)
         else:
             return {"error": "Type de tâche inconnu pour ChefRHManager"}
+
+    def handle(self, action_type, project_path=None):
+        task = {"type": action_type, "project_path": project_path}
+        return self.dispatch(task)

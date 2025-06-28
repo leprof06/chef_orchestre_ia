@@ -23,3 +23,7 @@ class ChefCodeManager(BaseManager):
             return self.agents["code_debugger"].execute(task)
         else:
             return {"error": "Type de tâche inconnu pour ChefCodeManager"}
+
+    def handle(self, action_type, project_path=None):
+        task = {"type": action_type, "project_path": project_path}
+        return self.dispatch(task)

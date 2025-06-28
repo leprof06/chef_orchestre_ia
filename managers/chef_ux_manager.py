@@ -15,3 +15,7 @@ class ChefUXManager(BaseManager):
             return self.agents["ui_feedback"].execute(task)
         else:
             return {"error": "Type de tâche inconnu pour ChefUXManager"}
+
+    def handle(self, action_type, project_path=None):
+        task = {"type": action_type, "project_path": project_path}
+        return self.dispatch(task)

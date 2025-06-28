@@ -1,4 +1,4 @@
-from managers.base_manager import BaseManager
+from managers.base_manager import BaseManager 
 from agents.data_analysis_agent import DataAnalysisAgent
 from agents.project_scanner_agent import GlobalProjectScanAgent
 from agents.api_key_scanner_agent import APIKeyScannerAgent
@@ -23,3 +23,8 @@ class ChefAnalyseManager(BaseManager):
             return self.agents["api_key_scanner"].execute(task)
         else:
             return {"error": "Type de tâche inconnu pour ChefAnalyseManager"}
+
+    # Ajoute cette méthode pour compatibilité avec Orchestrator
+    def handle(self, action_type, project_path=None):
+        task = {"type": action_type, "project_path": project_path}
+        return self.dispatch(task)
