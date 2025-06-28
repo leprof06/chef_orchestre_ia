@@ -1,136 +1,121 @@
-# 🤖 Chef d'Orchestre IA
+🤖 Chef d'Orchestre IA
 
-Une IA locale modulaire capable de recevoir des instructions en langage naturel, de créer automatiquement des agents spécialisés (code, test, doc...), d'analyser un projet, et de proposer une interface utilisateur conviviale pour interagir avec les tâches, éditer le code généré, et le modifier manuellement si besoin.
+Une IA locale modulaire pour gérer vos projets en langage naturel :
 
----
+- Créez, analysez, optimisez, débugguez, documentez et développez vos projets depuis une interface web ultra intuitive.
+- Orchestration automatique via un système PDG > Managers > Agents spécialisés.
 
-## 🚀 Fonctionnalités principales
+🚀 Fonctionnalités principales
 
-- 💬 Interface de chat intuitive via navigateur
-- 🧠 Création automatique d'agents via `RHAgent`
-- 🛠 Agents spécialisés : code, test, debug, doc, UX, optimisation, analyse, liaison API...
-- 🔁 Réutilisation de code existant avec GitHub / HuggingFace
-- 📄 Analyse de projet complète via `ProjectDoctorAgent`
-- 🧪 Tests automatisés générés
-- 🛑 Fonction Pause/Play pour modifier le code manuellement
-- 🖥 Interface HTML interactive avec éditeur de fichiers
-- 📦 Export du projet finalisé (zip + README auto)
-- 🔐 Fonctionnement local avec ou sans API externes (OpenAI / HuggingFace)
+💬 Chat IA en français (navigateur) pour piloter votre projet
+🧩 Architecture ultra-modulaire : orchestrateur, managers, agents
+🧠 Agents spécialisés : code, test, analyse, doc, UX, gestion dépendances…
+📦 Import de projet existant (zip), ou création de zéro
+🔍 Analyse de code et détection de failles / erreurs / clés API
+🛠️ Génération, optimisation, et correction de code automatique
+🛑 Pause/Play pour éditer manuellement le code pendant la génération
+🖥️ Interface HTML responsive avec éditeur et timeline des actions
+📄 Export du projet complet (zip + README)
+🔐 Fonctionne en local, avec gestion de clés API externes
+🧱 Architecture du projet
 
----
-
-## 🧱 Architecture
-
-```
 chef_orchestre_ia/
-├── orchestrator.py             # Lancement agents en CLI (optionnel)
-├── interface.py                # Interface web (point d'entrée recommandé)
-├── config.py                   # Chargement des clés .env
-├── config_logger.py            # Configuration des logs
-├── .env                        # Stockage des clés API
-├── requirements.txt
+├── app.py                        # Point d'entrée Flask (routes web + API)
+├── orchestrator.py               # Chef d'orchestre (route les tâches vers les managers)
+├── managers/
+│   ├── chef_analyse_manager.py   # Manager d'analyse (analyse, scan, clé API)
+│   ├── chef_code_manager.py      # Manager code (génération, debug, optimisation)
+│   ├── chef_devops_manager.py    # Manager devops (dépendances)
+│   ├── chef_rh_manager.py        # Manager RH (agents, managers dynamiques)
+│   └── chef_ux_manager.py        # Manager UX (analyse interface)
 ├── agents/
-│   ├── base_agent.py
-│   ├── chef_agent.py
-│   ├── rh_agent.py
-│   ├── code_agent.py
-│   ├── test_agent.py
-│   ├── debug_agent.py
-│   ├── doc_agent.py
-│   ├── optimize_agent.py
-│   ├── ux_agent.py
-│   ├── api_liaison_agent.py
-│   ├── reuse_code_agent.py
-│   └── project_doctor_agent.py
-├── doctor_modules/
-│   ├── analysis/
-│   ├── core/
-│   └── ...
+│   ├── ...                       # Agents spécialisés, appelés par les managers
 ├── frontend/
-│   └── interface.html           # Interface utilisateur
-├── backend/
-│   └── routes/
-│       └── routes.py            # API Flask
-└── test/
-    └── test_api_routes.py
-```
+│   └── templates/
+│       ├── index.html            # Accueil
+│       ├── choose_project.html   # Import projet existant (.zip)
+│       └── chat.html             # Interface principale (chat + logs + code)
+├── workspace/                    # (créé à l'exécution) : stockage temporaire des projets uploadés
+├── requirements.txt              # Liste des dépendances à installer
+├── .env                          # Fichier de configuration des clés API (à créer, cf. plus bas)
+└── README.md                     # Ce fichier
 
----
+🛠️ Installation & Prérequis
 
-## ▶️ Lancement
+Cloner le projet
+cd chef_orchestre_ia
 
-### 1. Installation des dépendances
-```bash
+Créer un fichier `.env` à la racine du projet(obligatoire pour renseigner vos clés API OpenAI et HuggingFace)Exemple de contenu :
+
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+HUGGINGFACE_API_KEY=hf_xxxxxxxxxxxxxxxxxxxxxxx
+
+Installer les dépendances Python
 pip install -r requirements.txt
-```
 
-### 2. Configuration des clés API
-Créez un fichier `.env` à la racine :
-```bash
-OPENAI_API_KEY=sk-...
-HUGGINGFACE_API_KEY=hf-...
-```
-Configurez ensuite `config.py` :
-```python
-CONFIG = {
-    "use_openai": True,
-    "use_huggingface": False,
-    ...
-}
-```
+🚦 Démarrage
 
-### 3. Lancement de l'application
-```bash
-python interface.py
-```
-Puis ouvrez votre navigateur à l'adresse : [http://localhost:5000](http://localhost:5000)
+Lancer l’application Flask
+python app.py
+Puis ouvrez http://localhost:5000 dans votre navigateur.
 
----
+Interface web
+Nouveau projet : démarre un projet vierge et discutez avec l’IA
+Projet existant : importez votre code sous forme de .zip, analysez ou éditez-le
+Chat : tapez vos instructions (“Analyse mon code”, “Optimise ce fichier”, etc.)
+Pause/Play : modifiez le code généré avant de relancer la génération automatique
+Analyse : lance une revue globale du projet par les agents
+Export : téléchargez le projet finalisé (ZIP) avec README généré
 
-## 🧠 Exemples d’utilisation dans le chat
+💡 Clés API nécessaires
 
-> "Corrige tous les fichiers Python dans le projet"
+OpenAI :Créer une clé API OpenAI
+HuggingFace :Créer une clé HuggingFace
 
-> "Génère un test unitaire pour le module optimize_agent"
+Copiez/collez vos clés dans le fichier .env comme montré plus haut.Si aucune clé n’est renseignée, l’IA utilisera uniquement les modules locaux.
 
-> "Crée un agent pour surveiller les dépendances de sécurité"
+🔍 Explication des principaux modules
 
-> "Fais un programme de prise de rendez-vous automatique chez le médecin"
+``Centralise toutes les routes Flask (web & API). C’est le serveur principal.
 
----
+``Cerveau du projet : c’est lui qui reçoit chaque instruction, décode la demande utilisateur, choisit le manager, et agrège les logs/retours pour l’interface.
 
-## 🌐 Interface Web
+``Un manager par domaine (analyse, code, devops, RH, UX).Chaque manager connaît ses agents spécialisés et route les tâches reçues.
 
-- Chat interactif avec les agents
-- Upload de projet (zip)
-- Édition de fichiers générés
-- Suivi en temps réel des échanges
-- Boutons : Pause / Reprise / Analyse Projet / Sauvegarde
+``Petits modules spécialisés (analyse, scan, code, test…).Chaque agent fait UN type de travail précis et remonte ses résultats au manager.
 
----
+``Les 3 templates HTML pour l’interface web :
 
-## 🛠 API Flask
+index.html : accueil
 
-| Route           | Méthode | Description                             |
-|----------------|---------|-----------------------------------------|
-| `/run`         | POST    | Envoie une tâche à l'IA                  |
-| `/upload`      | POST    | Upload d'un fichier zip de projet       |
-| `/files`       | GET     | Liste les fichiers disponibles          |
-| `/file`        | GET/POST| Lire / sauvegarder un fichier           |
-| `/toggle_pause`| POST    | Active / désactive le mode pause        |
+choose_project.html : import .zip
 
----
+chat.html : interface centrale (chat + logs + code + timeline)
 
-## 📦 Développement local sans cloud
+``Espace temporaire pour les fichiers uploadés pendant une session.
 
-Pour simuler les appels API sans internet :
-```bash
-export USE_REQUESTS_STUB=1
-```
-Prévoir un fichier `requests_stub.py` pour gérer les requêtes fictives.
+🔄 Extensibilité
 
----
+Vous pouvez facilement ajouter :
 
-## 🛡️ Licence
+Nouveaux managers/agents en copiant les fichiers existants dans managers/ et agents/
 
-MIT - projet libre, améliorable en communauté
+Logique IA personnalisée en enrichissant la méthode handle() des managers ou les méthodes des agents
+
+Fonctionnalités frontend via les templates et le JS intégré
+
+📋 Commandes rapides
+
+Installer les dépendances
+pip install -r requirements.txt
+Lancer le serveur
+python app.py
+Mettre à jour les clés APIModifier le fichier .env à la racine
+
+🙏 Remerciements
+
+Projet conçu par Yann (full-stack, IA pédagogique) avec le copilote GPT-CodeAssistant.
+
+🛠️ Contribution / Aide
+
+Pull requests, suggestions et forks bienvenus !Pour toute question : ouvrez une issue ou contactez le créateur.
