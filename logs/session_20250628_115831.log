@@ -1,4 +1,0 @@
-2025-06-28 11:58:32,033 [WARNING] werkzeug:  * Debugger is active!
-2025-06-28 11:58:32,038 [INFO] werkzeug:  * Debugger PIN: 540-009-229
-2025-06-28 11:58:32,109 [INFO] werkzeug: 127.0.0.1 - - [28/Jun/2025 11:58:32] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
-2025-06-28 12:02:25,214 [INFO] werkzeug:  * Detected change in 'H:\\IA\\chef_orchestre_ia\\templates\\__init__.py', reloading
