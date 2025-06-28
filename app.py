@@ -96,12 +96,23 @@ def parse_user_input(user_input, project_path=None):
 def api_chat():
     data = request.get_json()
     user_input = data.get("message")
-    project_path = session.get('current_project', None)
+    project_path = data.get("project_path", None)
     if not user_input:
         return jsonify({"error": "Message vide"}), 400
+
+    # Dispatch task comme avant
     task = parse_user_input(user_input, project_path)
     result = orchestrator.dispatch_task(task)
-    return jsonify(result)
+
+    # Si le résultat est un dict, on le rend lisible côté front :
+    if isinstance(result, dict):
+        lines = []
+        for key, value in result.items():
+            lines.append(f"{key}: {value}")
+        formatted = "\n".join(lines)
+        return jsonify({"result": formatted})
+    else:
+        return jsonify({"result": str(result)})
 
 if __name__ == "__main__":
     app.run(debug=True)

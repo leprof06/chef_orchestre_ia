@@ -118,7 +118,7 @@
             const data = await response.json();
             // Affiche la réponse dans la timeline/logs
             const logs = document.getElementById('timelineLogs');
-            logs.innerHTML += `<div><b>IA :</b> ${data.result || data.message || JSON.stringify(data)}</div>`;
+            logs.innerHTML += `<div style="white-space:pre-line"><b>IA :</b> ${data.result || data.message || JSON.stringify(data)}</div>`;
             input.value = '';
         });
     </script>
