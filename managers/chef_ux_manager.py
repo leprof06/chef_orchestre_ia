@@ -1,11 +1,11 @@
 from managers.base_manager import BaseManager
-from agents.ui_feedback_agent import UIFeedbackAgent
+from agents.ux_agent import UXAgent
 
 class ChefUXManager(BaseManager):
     def __init__(self):
         super().__init__("ChefUXManager")
         self.agents = {
-            "ui_feedback": UIFeedbackAgent()
+            "ui_feedback": UXAgent()
         }
 
     def dispatch(self, task):

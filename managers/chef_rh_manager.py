@@ -1,11 +1,11 @@
 from managers.base_manager import BaseManager
-from agents.agent_factory import AgentFactory
+from agents.rh_agent import RHAgent
 
 class ChefRHManager(BaseManager):
     def __init__(self):
         super().__init__("ChefRHManager")
         self.agents = {
-            "factory": AgentFactory()
+            "factory": RHAgent()
         }
 
     def dispatch(self, task):

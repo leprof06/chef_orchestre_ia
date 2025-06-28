@@ -1,25 +1,12 @@
 # agents/reuse_code_agent.py
 
+import requests
 import logging
 import base64
 from typing import Dict
 from .api_key_scanner_agent import APIKeyScannerAgent
 from config_logger import get_logger
 import os
-
-if os.environ.get("USE_REQUESTS_STUB") == "1":
-    try:
-        import requests_stub as requests
-    except ModuleNotFoundError:
-        requests = None
-else:
-    try:
-        import requests
-    except ModuleNotFoundError:
-        try:
-            import requests_stub as requests
-        except ModuleNotFoundError:
-            requests = None
 
 class ReuseCodeAgent:
     def __init__(self, api_agent: APIKeyScannerAgent | None = None) -> None:
