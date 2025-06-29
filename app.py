@@ -23,7 +23,7 @@ def index():
 def nouveau_projet():
     session.pop('current_project', None)
     orchestrator.init_new_project()
-    return render_template("chat.html", show_analyse_btn=False)
+    return render_template("chat.html", show_analyse_btn=False, logs=[], code="")
 
 @app.route("/projet-existant")
 def projet_existant():
@@ -45,6 +45,7 @@ def upload_projet_existant():
         file.save(save_path)
         session['current_project'] = save_path
         orchestrator.init_from_zip(save_path)
+        flash(f"Projet chargé depuis {save_path}.")
         return redirect(url_for('chat_projet'))
     else:
         flash("Fichier non valide (format attendu : .zip)")
@@ -62,13 +63,12 @@ def analyser():
     project_path = session.get('current_project')
     result = orchestrator.analyse_project(project_path)
     logs = orchestrator.get_logs()
-    # Les logs doivent être **tous** stringifiés pour l’UI
-    # → Si logs contient des objets, convertis-les en str
-    logs_str = [str(log) if not isinstance(log, str) else log for log in logs]
-    return jsonify({"logs": logs_str})
+    return jsonify({"logs": logs if logs else ["Aucun log généré"]})
 
 def parse_user_input(user_input, project_path=None):
     user_input = user_input.lower()
+    if "améliore" in user_input:
+        return {"manager": "code", "type": "improve_code", "project_path": project_path}
     if "analyse" in user_input or "scanner" in user_input:
         return {"manager": "analyse", "type": "analyse_code", "project_path": project_path}
     elif "clé api" in user_input or "api key" in user_input:
@@ -97,14 +97,17 @@ def chat_api():
     project_path = data.get("project_path")
     if not project_path:
         project_path = session.get("current_project")
-
     if not user_input:
         return jsonify({"error": "Message vide"}), 400
-
     task = parse_user_input(user_input, project_path)
     result = orchestrator.dispatch_task(task)
-    # result peut être un dict => on renvoie tel quel, **pas** json.dumps
-    return jsonify({"result": result})
+    # Afficher le résultat principal ou message d’erreur
+    if isinstance(result, dict) and "error" in result:
+        return jsonify({"result": result["error"]})
+    elif isinstance(result, dict):
+        return jsonify({"result": result.get("result", result)})
+    else:
+        return jsonify({"result": str(result)})
 
 if __name__ == "__main__":
     app.run(debug=True)
