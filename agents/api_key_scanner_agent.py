@@ -3,6 +3,8 @@
 from .base_agent import BaseAgent
 import os
 import re
+from agents.utils.scan_secrets import scan_for_secrets
+from agents.utils.logger import get_logger
 
 class APIKeyScannerAgent(BaseAgent):
     """

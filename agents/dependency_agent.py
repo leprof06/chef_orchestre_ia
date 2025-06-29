@@ -4,6 +4,9 @@ from .base_agent import BaseAgent
 from config import CONFIG
 import os
 import json
+from agents.utils.requirements_parser import parse_requirements, parse_package_json
+from agents.utils.scan_vulnerabilities import scan_python_vuln, scan_node_vuln
+from agents.utils.logger import get_logger
 
 try:
     import openai

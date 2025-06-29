@@ -2,6 +2,10 @@
 
 from .base_agent import BaseAgent
 from config import CONFIG
+from agents.utils.file_tools import read_file_safe, list_files_recursive
+from agents.utils.docstring_extractor import extract_docstrings
+from agents.utils.logger import get_logger
+
 
 try:
     import openai

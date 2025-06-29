@@ -2,6 +2,8 @@
 
 from .base_agent import BaseAgent
 from config import CONFIG
+from agents.utils.file_tools import list_files_recursive, read_file_safe
+from agents.utils.logger import get_logger
 
 try:
     import openai

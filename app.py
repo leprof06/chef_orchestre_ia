@@ -1,8 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import os
 from werkzeug.utils import secure_filename
-
+from agents.utils.cache_tools import purge_large_or_old_cache
 from orchestrator import Orchestrator
+
+# 🔥 Au tout début, purge le cache (optionnel mais conseillé)
+purge_large_or_old_cache()
 
 orchestrator = Orchestrator()
 UPLOAD_FOLDER = os.path.join('workspace', 'uploads')

@@ -4,6 +4,13 @@ from .base_agent import BaseAgent
 from config import CONFIG
 import os
 import json
+from agents.utils.syntax_checker import analyze_folder_for_syntax
+from agents.utils.project_structure import analyser_structure_projet
+from agents.utils.file_tools import list_files_recursive
+from agents.utils.big_file_detector import find_big_files
+from agents.utils.scan_secrets import scan_for_secrets
+from agents.utils.logger import get_logger
+
 
 try:
     import openai

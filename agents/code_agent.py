@@ -6,6 +6,8 @@ import openai
 import requests
 from config import CONFIG
 from config_logger import get_logger
+from agents.utils.file_tools import read_file_safe, write_file_safe, list_files_recursive
+from agents.utils.logger import get_logger
 
 class CodeAgent(BaseAgent):
     """
