@@ -39,11 +39,14 @@
         <div class="main-content">
             <section class="timeline-panel">
                 <div class="timeline-title">Étapes & Logs Orchestrateur</div>
-                <!-- BOUTON D'ANALYSE AJAX -->
-                <button id="analyze-btn" class="analyse-btn" type="button">Analyser le projet</button>
                 <div class="timeline-logs" id="timelineLogs">
                     <!-- Les logs/interventions agents s’affichent ici dynamiquement -->
                 </div>
+                {% if show_analyse_btn %}
+                    <form method="post" action="{{ url_for('analyser_projet') }}">
+                        <button class="analyse-btn" type="submit">Analyser le projet</button>
+                    </form>
+                {% endif %}
             </section>
             <section class="code-panel">
                 <div class="code-header">
@@ -66,23 +69,6 @@
         </div>
     </div>
     <script>
-        // === Bouton Analyse projet AJAX ===
-        document.getElementById("analyze-btn").onclick = function() {
-            fetch("/analyser", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({})
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Affiche le résultat dans la zone logs/timeline
-                document.getElementById("timelineLogs").innerText = data.logs || "Analyse terminée !";
-            })
-            .catch(err => {
-                document.getElementById("timelineLogs").innerText = "Erreur lors de l'analyse.";
-            });
-        };
-
         // Pause/Play code
         const pauseBtn = document.getElementById('pauseBtn');
         const playBtn = document.getElementById('playBtn');
@@ -116,11 +102,27 @@
                 body: JSON.stringify({ message })
             });
             const data = await response.json();
-            // Affiche la réponse dans la timeline/logs
+            // AFFICHAGE lisible même pour objets
+            let text = data.result || data.message || data.error || data.logs || "";
+            if (typeof text === 'object') {
+                text = JSON.stringify(text, null, 2);
+            }
             const logs = document.getElementById('timelineLogs');
-            logs.innerHTML += `<div style="white-space:pre-line"><b>IA :</b> ${data.result || data.message || JSON.stringify(data)}</div>`;
+            logs.innerHTML += `<div><b>IA :</b> <pre>${text}</pre></div>`;
             input.value = '';
         });
+
+        // === Chargement des logs initiaux ===
+        async function loadInitialLogs() {
+            const response = await fetch('/api/logs');
+            const data = await response.json();
+            const logs = document.getElementById('timelineLogs');
+            logs.innerHTML = data.logs.map(log => `<div>${log}</div>`).join('');
+        }
+        loadInitialLogs();
+
+        // === Mise à jour du titre du projet ===
+        document.getElementById('project-title').textContent = "{{ project_title }}";
     </script>
 </body>
 </html>

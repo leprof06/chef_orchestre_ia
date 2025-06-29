@@ -21,7 +21,6 @@ def index():
 
 @app.route("/nouveau-projet")
 def nouveau_projet():
-    # Orchestrator : création d’un projet vierge
     session.pop('current_project', None)
     orchestrator.init_new_project()
     return render_template("chat.html", show_analyse_btn=False)
@@ -45,7 +44,6 @@ def upload_projet_existant():
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
         file.save(save_path)
         session['current_project'] = save_path
-        # Orchestrator : initialisation depuis le zip
         orchestrator.init_from_zip(save_path)
         return redirect(url_for('chat_projet'))
     else:
@@ -55,7 +53,6 @@ def upload_projet_existant():
 @app.route("/chat")
 def chat_projet():
     show_analyse = bool(session.get('current_project'))
-    # Tu peux afficher des logs/codes initiaux ici
     logs = orchestrator.get_logs()
     code = orchestrator.get_code_state()
     return render_template("chat.html", show_analyse_btn=show_analyse, logs=logs, code=code)
@@ -63,13 +60,13 @@ def chat_projet():
 @app.route("/analyser", methods=["POST"])
 def analyser():
     project_path = session.get('current_project')
+    if not project_path:
+        return jsonify({"error": "Aucun projet sélectionné"}), 400
     result = orchestrator.analyse_project(project_path)
     logs = orchestrator.get_logs()
     return jsonify({"logs": "\n".join(logs) if logs else "Aucun log généré"})
 
 def parse_user_input(user_input, project_path=None):
-    # … (copie ton code de mapping demande → agent/manager)
-    # inchangé
     user_input = user_input.lower()
     if "analyse" in user_input or "scanner" in user_input:
         return {"manager": "analyse", "type": "analyse_code", "project_path": project_path}
@@ -97,17 +94,14 @@ def chat_api():
     data = request.get_json()
     user_input = data.get("message")
     project_path = data.get("project_path")
-    # 👇 Fallback sur la session si pas fourni explicitement
     if not project_path:
         project_path = session.get("current_project")
-
     if not user_input:
         return jsonify({"error": "Message vide"}), 400
-
-    # Ici, tu continues comme avant :
     task = parse_user_input(user_input, project_path)
     result = orchestrator.dispatch_task(task)
-    return jsonify(result)
+    # Pour compat frontend, toujours clé "result"
+    return jsonify({"result": result})
 
 if __name__ == "__main__":
     app.run(debug=True)
