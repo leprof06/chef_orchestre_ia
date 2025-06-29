@@ -62,8 +62,10 @@ def analyser():
     project_path = session.get('current_project')
     result = orchestrator.analyse_project(project_path)
     logs = orchestrator.get_logs()
-    # Ne pas doubler la sérialisation, renvoyer le dict pur
-    return jsonify({"logs": logs if logs else ["Aucun log généré"], "result": result})
+    # Les logs doivent être **tous** stringifiés pour l’UI
+    # → Si logs contient des objets, convertis-les en str
+    logs_str = [str(log) if not isinstance(log, str) else log for log in logs]
+    return jsonify({"logs": logs_str})
 
 def parse_user_input(user_input, project_path=None):
     user_input = user_input.lower()
@@ -101,7 +103,7 @@ def chat_api():
 
     task = parse_user_input(user_input, project_path)
     result = orchestrator.dispatch_task(task)
-    # Renvoyer un dict simple
+    # result peut être un dict => on renvoie tel quel, **pas** json.dumps
     return jsonify({"result": result})
 
 if __name__ == "__main__":

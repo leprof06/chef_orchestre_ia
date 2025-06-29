@@ -24,6 +24,7 @@
         .chat-input { flex:1; font-size:1em; border-radius: 12px; border:1.2px solid #d6daf0; padding: 0.77em 1em;}
         .chat-send { font-size:1.02em; border:none; border-radius:10px; background:linear-gradient(90deg,#355C7D 0%,#6C5B7B 100%); color:#fff; font-weight:500; padding:0.7em 1.6em; cursor:pointer;}
         .analyse-btn { margin-bottom:1.2em; background:linear-gradient(90deg,#F7971E 0%,#FFD200 100%); color:#444; border:none; border-radius:10px; font-weight:500; padding:0.48em 1.3em; cursor:pointer;}
+        pre { background: #f7f7fa; border-radius:8px; padding:0.7em 1em; margin:0.5em 0;}
         @media (max-width:950px){
             .main-content{ flex-direction:column;}
             .timeline-panel, .code-panel { flex:none; width:100%;}
@@ -79,18 +80,16 @@
         const pauseBtn = document.getElementById('pauseBtn');
         const playBtn = document.getElementById('playBtn');
         const codeView = document.getElementById('codeView');
-        let isPaused = false;
         pauseBtn.onclick = function() {
             codeView.contentEditable = "true";
-            isPaused = true;
             pauseBtn.disabled = true;
             playBtn.disabled = false;
         };
         playBtn.onclick = function() {
             codeView.contentEditable = "false";
-            isPaused = false;
             pauseBtn.disabled = false;
             playBtn.disabled = true;
+            // À implémenter : sauvegarde du code modifié, si besoin plus tard
         };
 
         // === Envoi AJAX du chat vers /api/chat ===
@@ -100,28 +99,25 @@
             const message = input.value.trim();
             if(!message) return;
 
-            // Envoi du message à l'API Flask
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ message })
             });
             const data = await response.json();
-            // Affiche la réponse dans la timeline/logs
             const logs = document.getElementById('timelineLogs');
-            let pretty = "";
+            // 🟢 Affichage robuste
+            let display;
             if (data.result) {
-                if (typeof data.result === "object") {
-                    pretty = "<pre style='font-size:1em'>" + JSON.stringify(data.result, null, 2) + "</pre>";
-                } else {
-                    pretty = data.result;
-                }
-            } else if (data.error) {
-                pretty = "<span style='color:red'>" + data.error + "</span>";
+                display = (typeof data.result === 'object')
+                    ? '<pre>' + JSON.stringify(data.result, null, 2) + '</pre>'
+                    : data.result;
+            } else if (data.message) {
+                display = data.message;
             } else {
-                pretty = JSON.stringify(data);
+                display = JSON.stringify(data);
             }
-            logs.innerHTML += `<div><b>IA :</b> ${pretty}</div>`;
+            logs.innerHTML += `<div><b>IA :</b> ${display}</div>`;
             input.value = '';
         });
     </script>
