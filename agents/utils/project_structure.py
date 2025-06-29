@@ -1,3 +1,5 @@
+# agents/utils/project_structure.py
+
 import os
 import ast
 import json
@@ -53,20 +55,42 @@ def analyser_fichier(path):
 
     return resultat
 
+def analyse_structure_globale(folder):
+    structure = {
+        "root_files": [],
+        "main_scripts": [],
+        "test_dirs": [],
+        "data_dirs": [],
+        "suspicious_files": []
+    }
+    for root, dirs, files in os.walk(folder):
+        for f in files:
+            path = os.path.relpath(os.path.join(root, f), folder)
+            if root == folder:
+                structure["root_files"].append(f)
+            if f.startswith("test_") or "test" in root.lower():
+                structure["test_dirs"].append(path)
+            if f.endswith((".csv", ".db", ".xlsx", ".json")):
+                structure["data_dirs"].append(path)
+            if f.lower() in ["secrets.py", ".env", "config.old"]:
+                structure["suspicious_files"].append(path)
+            if f == "main.py" or f == "app.py":
+                structure["main_scripts"].append(path)
+    return structure
 
 def analyser_structure_projet(racine_projet, rapport_dir=None):
+    """
+    Retourne à la fois le résumé global et les analyses détaillées fichier par fichier.
+    """
     resume_projet = []
-
     for root, _, files in os.walk(racine_projet):
         if any(x in root for x in ["venv", "node_modules", "__pycache__", ".git"]):
             continue
-
         for file in files:
             if file.endswith(EXTENSIONS_CIBLES):
                 chemin = os.path.join(root, file)
                 analyse = analyser_fichier(chemin)
                 resume_projet.append(analyse)
-
                 if rapport_dir:
                     rapport_dir = Path(rapport_dir)
                     rapport_dir.mkdir(parents=True, exist_ok=True)
@@ -75,4 +99,8 @@ def analyser_structure_projet(racine_projet, rapport_dir=None):
                     with open(sortie, "w", encoding="utf-8") as f:
                         json.dump(analyse, f, indent=2, ensure_ascii=False)
 
-    return resume_projet
+    structure = analyse_structure_globale(racine_projet)
+    return {
+        "structure_summary": structure,
+        "detailed_files": resume_projet
+    }
