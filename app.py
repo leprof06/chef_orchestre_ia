@@ -60,11 +60,10 @@ def chat_projet():
 @app.route("/analyser", methods=["POST"])
 def analyser():
     project_path = session.get('current_project')
-    if not project_path:
-        return jsonify({"error": "Aucun projet sélectionné"}), 400
     result = orchestrator.analyse_project(project_path)
     logs = orchestrator.get_logs()
-    return jsonify({"logs": "\n".join(logs) if logs else "Aucun log généré"})
+    # Ne pas doubler la sérialisation, renvoyer le dict pur
+    return jsonify({"logs": logs if logs else ["Aucun log généré"], "result": result})
 
 def parse_user_input(user_input, project_path=None):
     user_input = user_input.lower()
@@ -96,11 +95,13 @@ def chat_api():
     project_path = data.get("project_path")
     if not project_path:
         project_path = session.get("current_project")
+
     if not user_input:
         return jsonify({"error": "Message vide"}), 400
+
     task = parse_user_input(user_input, project_path)
     result = orchestrator.dispatch_task(task)
-    # Pour compat frontend, toujours clé "result"
+    # Renvoyer un dict simple
     return jsonify({"result": result})
 
 if __name__ == "__main__":
