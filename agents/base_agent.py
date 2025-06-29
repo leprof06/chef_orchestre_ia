@@ -9,8 +9,8 @@ class BaseAgent:
     def __init__(self, name="BaseAgent"):
         self.name = name
 
-    def run(self, *args, **kwargs):
+    def execute(self, task):
         """
         Méthode à surcharger pour exécuter le comportement de l'agent.
         """
-        raise NotImplementedError("La méthode 'run' doit être implémentée dans les sous-classes.")
+        raise NotImplementedError("La méthode 'execute' doit être implémentée dans les sous-classes.")
