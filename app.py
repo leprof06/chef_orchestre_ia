@@ -93,26 +93,21 @@ def parse_user_input(user_input, project_path=None):
         return {"manager": "analyse", "type": "analyse_code", "project_path": project_path, "note": "🔍 Interprétation approximative"}
 
 @app.route("/api/chat", methods=["POST"])
-def api_chat():
+def chat_api():
     data = request.get_json()
     user_input = data.get("message")
-    project_path = data.get("project_path", None)
+    project_path = data.get("project_path")
+    # 👇 Fallback sur la session si pas fourni explicitement
+    if not project_path:
+        project_path = session.get("current_project")
+
     if not user_input:
         return jsonify({"error": "Message vide"}), 400
 
-    # Dispatch task comme avant
+    # Ici, tu continues comme avant :
     task = parse_user_input(user_input, project_path)
     result = orchestrator.dispatch_task(task)
-
-    # Si le résultat est un dict, on le rend lisible côté front :
-    if isinstance(result, dict):
-        lines = []
-        for key, value in result.items():
-            lines.append(f"{key}: {value}")
-        formatted = "\n".join(lines)
-        return jsonify({"result": formatted})
-    else:
-        return jsonify({"result": str(result)})
+    return jsonify(result)
 
 if __name__ == "__main__":
     app.run(debug=True)

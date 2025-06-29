@@ -4,3 +4,9 @@ __pycache__
 .env
 *wokrspace*
 *logs*
+# Ignorer tout le contenu du dossier uploads/
+uploads/*
+# Mais ne PAS ignorer le dossier uploads/ lui-même (pour que la structure existe)
+!uploads/.gitkeep
+# Ignorer les fichiers de logs
+*.logs
