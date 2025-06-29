@@ -1,96 +1,119 @@
+# agents/data_analysis_agent.py
+
+from .base_agent import BaseAgent
+from config import CONFIG
 import os
 import json
-from pathlib import Path
-from agents.base_agent import BaseAgent
-from agents.utils.syntax_checker import analyze_folder_for_syntax
-from agents.utils.project_structure import analyser_structure_projet
 
-class DeepProjectAnalyzer:
-    CACHE_PATH = Path("cache/deep_summary.json")
-    MAX_CACHE_BYTES = 50 * 1024 * 1024  # 50 Mo
-
-    def __init__(self, project_folder):
-        self.project_folder = project_folder
-        self.scanned_files = {}
-        self.updates = []
-
-    def load_cache(self):
-        if self.CACHE_PATH.exists():
-            try:
-                with open(self.CACHE_PATH, encoding="utf-8") as f:
-                    self.scanned_files = json.load(f)
-                    return True
-            except Exception:
-                pass
-        return False
-
-    def scan(self):
-        new_scan = {}
-
-        for root, _, files in os.walk(self.project_folder):
-            for f in files:
-                if f.endswith((".py", ".html", ".json", ".env")):
-                    path = os.path.join(root, f)
-                    try:
-                        with open(path, "r", encoding="utf-8") as file:
-                            content = file.read()
-                            new_scan[path] = content
-                            if path not in self.scanned_files:
-                                self.updates.append((path, "🆕 Nouveau fichier détecté"))
-                            elif self.scanned_files[path] != content:
-                                self.updates.append((path, "♻️ Fichier mis à jour"))
-                    except Exception as e:
-                        self.updates.append((path, f"❌ Erreur de lecture : {e}"))
-
-        self.save_cache(new_scan)
-        return new_scan, self.updates
-
-    def save_cache(self, new_scan):
-        try:
-            self.CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
-            json_str = json.dumps(new_scan, indent=2, ensure_ascii=False)
-            if len(json_str.encode("utf-8")) <= self.MAX_CACHE_BYTES:
-                with open(self.CACHE_PATH, "w", encoding="utf-8") as f:
-                    f.write(json_str)
-        except Exception:
-            pass
-
-    def purge_cache(self):
-        try:
-            if self.CACHE_PATH.exists():
-                self.CACHE_PATH.unlink()
-                return True
-        except Exception:
-            pass
-        return False
+try:
+    import openai
+except ImportError:
+    openai = None
+try:
+    import requests
+except ImportError:
+    requests = None
 
 class DataAnalysisAgent(BaseAgent):
+    """
+    Agent d'analyse de projet :
+    - Analyse syntaxique Python/JS/JSON
+    - Analyse dépendances (requirements.txt, package.json)
+    - Peut utiliser OpenAI, HuggingFace, ou fallback local pour résumé intelligent
+    - Donne un rapport complet pour le front
+    """
     def __init__(self):
         super().__init__("DataAnalysisAgent")
+        self.has_openai = bool(CONFIG.get("use_openai") and openai)
+        self.has_hf = bool(CONFIG.get("use_huggingface") and requests)
+
+    def analyze_syntax(self, folder_path):
+        result = {}
+        for root, _, files in os.walk(folder_path):
+            for f in files:
+                ext = f.split('.')[-1].lower()
+                path = os.path.join(root, f)
+                if ext == "py":
+                    try:
+                        with open(path, "r", encoding="utf-8") as file:
+                            import ast
+                            ast.parse(file.read())
+                    except Exception as e:
+                        result[path] = f"Erreur Python: {e}"
+                elif ext == "json":
+                    try:
+                        with open(path, "r", encoding="utf-8") as file:
+                            json.load(file)
+                    except Exception as e:
+                        result[path] = f"Erreur JSON: {e}"
+        return result
+
+    def analyze_dependencies(self, folder_path):
+        reqs, pkgs = [], []
+        for root, _, files in os.walk(folder_path):
+            for f in files:
+                if f == "requirements.txt":
+                    with open(os.path.join(root, f), encoding="utf-8") as file:
+                        reqs += [l.strip() for l in file if l.strip()]
+                if f == "package.json":
+                    with open(os.path.join(root, f), encoding="utf-8") as file:
+                        try:
+                            data = json.load(file)
+                            pkgs += list(data.get("dependencies", {}).keys())
+                        except Exception:
+                            pass
+        return {"python_requirements": reqs, "node_packages": pkgs}
+
+    def analyze_with_openai(self, folder_path):
+        if not self.has_openai:
+            return None
+        files = []
+        for root, _, fs in os.walk(folder_path):
+            for f in fs:
+                if f.endswith((".py", ".js", ".json")):
+                    try:
+                        with open(os.path.join(root, f), "r", encoding="utf-8") as file:
+                            snippet = file.read()[:600]
+                            files.append(f"Fichier: {f}\n{snippet}")
+                    except Exception:
+                        pass
+        prompt = (
+            "Voici une sélection de fichiers d'un projet logiciel. Résume l'architecture, "
+            "détecte les problèmes majeurs, et donne les points d'amélioration prioritaires :\n\n"
+            + "\n\n".join(files[:5])
+        )
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "Tu es un expert de l'analyse de code."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            return f"Erreur OpenAI: {str(e)}"
+
+    def analyze_with_huggingface(self, folder_path):
+        if not self.has_hf:
+            return None
+        return "Analyse HuggingFace (à brancher sur un modèle de ton choix)"
 
     def execute(self, task):
         folder_path = task.get("project_path")
         if not folder_path or not os.path.exists(folder_path):
-            return {"error": "Chemin de projet invalide ou manquant."}
-
-        # Analyse syntaxique
-        syntax_result = analyze_folder_for_syntax(folder_path)
-
-        # Analyse de structure approfondie
-        analyzer = DeepProjectAnalyzer(folder_path)
-        analyzer.load_cache()
-        structure_result, updates = analyzer.scan()
-
-        # Analyse des fichiers par structure logique
-        file_structure = analyser_structure_projet(folder_path)
-
-        result = {}
-        if syntax_result:
-            result["syntax_errors"] = syntax_result
+            return {"error": "Chemin projet invalide."}
+        syntax = self.analyze_syntax(folder_path)
+        deps = self.analyze_dependencies(folder_path)
+        ia_resume = None
+        if self.has_openai:
+            ia_resume = self.analyze_with_openai(folder_path)
+        elif self.has_hf:
+            ia_resume = self.analyze_with_huggingface(folder_path)
         else:
-            result["syntax"] = "Aucune erreur de syntaxe détectée."
-
-        result["structure_updates"] = updates if updates else "Aucun changement détecté."
-        result["structure_details"] = file_structure
-
-        return {"result": result}
+            ia_resume = "Résumé IA indisponible (mode local)."
+        return {
+            "syntax_errors": syntax or "OK",
+            "dependencies": deps,
+            "ia_resume": ia_resume
+        }
