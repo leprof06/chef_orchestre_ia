@@ -1,42 +1,88 @@
-import logging
-from typing import List
+# agents/external_api_miaison_agent.py
+
+from .base_agent import BaseAgent
 import os
+import re
 
-if os.environ.get("USE_REQUESTS_STUB") == "1":
-    try:
-        import requests_stub as requests
-    except ModuleNotFoundError:
-        requests = None
-else:
-    try:
-        import requests
-    except ModuleNotFoundError:
-        try:
-            import requests_stub as requests
-        except ModuleNotFoundError:
-            requests = None
+try:
+    import openai
+except ImportError:
+    openai = None
+from config import CONFIG
 
-from agents.base_agent import BaseAgent
-
-class ExternalAPILiaisonAgent(BaseAgent):
-    """Agent responsible for querying external APIs (e.g., GitHub)."""
+class ExternalAPIMiaisonAgent(BaseAgent):
+    """
+    Analyse le projet pour repérer toutes les dépendances à des API externes connues.
+    Utilise OpenAI si possible, sinon des heuristiques locales.
+    """
+    COMMON_API_HINTS = [
+        ("openai", r"openai[\.\[]"),
+        ("huggingface", r"huggingface|transformers[\.\[]"),
+        ("github", r"github[\.\[]"),
+        ("deepl", r"deepl[\.\[]"),
+        ("stripe", r"stripe[\.\[]"),
+        ("google", r"google\.cloud|googleapiclient|googlemaps"),
+    ]
 
     def __init__(self):
-        super().__init__("ExternalAPILiaisonAgent")
-        self.logger = logging.getLogger(__name__)
+        super().__init__("ExternalAPIMiaisonAgent")
+        self.has_openai = bool(CONFIG.get("use_openai") and openai)
 
-    def search_github(self, query: str) -> List[str]:
-        if requests is None:
-            self.logger.error("La bibliothèque 'requests' n'est pas installée.")
-            return []
-        url = "https://api.github.com/search/repositories"
-        params = {"q": query}
+    def scan_file(self, path):
+        hits = []
         try:
-            self.logger.info("Searching GitHub for '%s'", query)
-            response = requests.get(url, params=params, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-            return [item.get("full_name", "") for item in data.get("items", [])]
-        except Exception as exc:
-            self.logger.error("GitHub search failed: %s", exc)
-            return []
+            with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+                for api, pattern in self.COMMON_API_HINTS:
+                    if re.search(pattern, content, re.I):
+                        hits.append(api)
+        except Exception:
+            pass
+        return set(hits)
+
+    def local_scan(self, folder):
+        apis = set()
+        for root, _, files in os.walk(folder):
+            for f in files:
+                if f.endswith((".py", ".js", ".json", ".yml", ".yaml")):
+                    path = os.path.join(root, f)
+                    apis |= self.scan_file(path)
+        return list(apis)
+
+    def scan_with_openai(self, folder):
+        if not self.has_openai:
+            return None
+        files = []
+        for root, _, fs in os.walk(folder):
+            for f in fs:
+                if f.endswith((".py", ".js", ".json")):
+                    try:
+                        with open(os.path.join(root, f), "r", encoding="utf-8") as file:
+                            files.append(file.read()[:800])
+                    except Exception:
+                        pass
+        prompt = (
+            "Liste toutes les APIs externes (ex : openai, huggingface, github, stripe, etc.) utilisées ou nécessaires dans ce projet :"
+            + "\n\n".join(files[:5])
+        )
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": "Tu es un auditeur d'intégrations API dans le code."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            return f"Erreur OpenAI: {str(e)}"
+
+    def execute(self, task):
+        folder = task.get("project_path")
+        if not folder or not os.path.isdir(folder):
+            return {"error": "Chemin projet invalide."}
+        if self.has_openai:
+            ai_result = self.scan_with_openai(folder)
+            return {"external_apis": ai_result}
+        apis = self.local_scan(folder)
+        return {"external_apis": apis or "Aucune API externe détectée."}

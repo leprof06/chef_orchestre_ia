@@ -1,66 +1,67 @@
 # agents/reuse_code_agent.py
 
-import requests
-import logging
-import base64
-from typing import Dict
-from .api_key_scanner_agent import APIKeyScannerAgent
-from config_logger import get_logger
-import os
+from .base_agent import BaseAgent
+from config import CONFIG
 
-class ReuseCodeAgent:
-    def __init__(self, api_agent: APIKeyScannerAgent | None = None) -> None:
-        self.logger = get_logger(__name__)
-        self.api_agent = api_agent or APIKeyScannerAgent()
+try:
+    import requests
+except ImportError:
+    requests = None
 
-    def handle_task(self, query: str) -> str | None:
-        if requests is None:
-            self.logger.error("La bibliothèque 'requests' n'est pas installée.")
-            return None
-        search_url = "https://api.github.com/search/code"
-        params = {"q": query}
+class ReuseCodeAgent(BaseAgent):
+    """
+    Recherche et intègre du code open source de plateformes (GitHub, StackOverflow...).
+    Donne toujours la source du code récupéré.
+    """
+    def __init__(self):
+        super().__init__("ReuseCodeAgent")
+        self.has_github = bool(CONFIG.get("use_github") and requests)
+        self.has_hf = bool(CONFIG.get("use_huggingface") and requests)
+
+    def search_github(self, query, language="python"):
+        if not self.has_github:
+            return []
+        url = "https://api.github.com/search/code"
+        params = {"q": f"{query} language:{language}", "sort": "indexed", "order": "desc"}
+        headers = {"Accept": "application/vnd.github.v3+json"}
+        if CONFIG.get("GITHUB_TOKEN"):
+            headers["Authorization"] = f"token {CONFIG['GITHUB_TOKEN']}"
         try:
-            self.logger.info(f"Recherche GitHub pour : {query}")
-            resp = requests.get(search_url, params=params, timeout=10)
-            resp.raise_for_status()
-            items = resp.json().get("items", [])
-            if not items:
-                return None
-            file_url = items[0]["url"]
-            self.logger.info(f"Récupération du fichier depuis {file_url}")
-            file_resp = requests.get(file_url, timeout=10)
-            file_resp.raise_for_status()
-            encoded = file_resp.json().get("content", "")
-            if not encoded:
-                return None
-            return base64.b64decode(encoded).decode("utf-8")
-        except Exception as exc:
-            self.logger.error(f"Échec de récupération pour '{query}' : {exc}")
-            return None
+            resp = requests.get(url, params=params, headers=headers, timeout=6)
+            items = resp.json().get("items", []) if resp.ok else []
+            return [
+                {"name": it["name"], "url": it["html_url"], "repo": it["repository"]["html_url"]}
+                for it in items[:3]
+            ]
+        except Exception as e:
+            return [{"error": f"Erreur recherche GitHub : {e}"}]
 
-    def fetch_readme(self, repo_full_name: str) -> str:
-        if requests is None:
-            self.logger.error("La bibliothèque 'requests' n'est pas installée.")
-            return ""
-        url = f"https://raw.githubusercontent.com/{repo_full_name}/HEAD/README.md"
+    def search_stackoverflow(self, query, language="python"):
+        if not requests:
+            return []
+        url = "https://api.stackexchange.com/2.3/search/advanced"
+        params = {
+            "order": "desc", "sort": "votes", "accepted": "True",
+            "title": query, "tagged": language, "site": "stackoverflow"
+        }
         try:
-            self.logger.info(f"Récupération du README de {repo_full_name}")
-            response = requests.get(url, timeout=10)
-            response.raise_for_status()
-            return response.text
-        except Exception as exc:
-            self.logger.error(f"Erreur de récupération du README : {exc}")
-            return ""
+            resp = requests.get(url, params=params, timeout=6)
+            items = resp.json().get("items", []) if resp.ok else []
+            return [
+                {"title": q["title"], "url": q["link"], "score": q["score"]}
+                for q in items[:3]
+            ]
+        except Exception as e:
+            return [{"error": f"Erreur recherche StackOverflow : {e}"}]
 
-    def search_and_fetch(self, query: str) -> Dict[str, str]:
-        repos = self.api_agent.search_github(query)
-        results: Dict[str, str] = {}
-        for repo in repos:
-            readme = self.fetch_readme(repo)
-            if readme:
-                results[repo] = readme
-            else:
-                self.logger.warning(f"README introuvable pour {repo}")
-        if not results:
-            self.logger.warning(f"Aucun README trouvé pour la requête '{query}'")
-        return results
+    def execute(self, task):
+        instruction = task.get("instruction", "")
+        language = task.get("language", "python")
+        # Recherche d'abord sur GitHub, puis StackOverflow
+        github_results = self.search_github(instruction, language)
+        so_results = self.search_stackoverflow(instruction, language)
+        # Fusionne et renvoie tout
+        return {
+            "github_results": github_results or "Aucun résultat GitHub.",
+            "stackoverflow_results": so_results or "Aucun résultat StackOverflow."
+        }

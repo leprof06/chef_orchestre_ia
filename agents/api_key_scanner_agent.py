@@ -1,37 +1,46 @@
+# agents/api_key_scanner_agent.py
+
+from .base_agent import BaseAgent
 import os
-from agents.base_agent import BaseAgent
+import re
 
 class APIKeyScannerAgent(BaseAgent):
+    """
+    Scanne un dossier à la recherche de fuites de clés API ou secrets en dur.
+    """
+    KEY_PATTERNS = [
+        r"(sk-\w{20,})",         # OpenAI
+        r"(hf_\w{16,})",         # HuggingFace
+        r"(ghp_[A-Za-z0-9]{36})",# GitHub PAT
+        r"(AIza[0-9A-Za-z-_]{35})", # Google API
+        r"(?i)api[_-]?key\s*[:=]\s*['\"]?([A-Za-z0-9\-_=]{16,})" # générique
+    ]
+
     def __init__(self):
         super().__init__("APIKeyScannerAgent")
 
+    def scan_file(self, path):
+        results = []
+        try:
+            with open(path, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+                for pattern in self.KEY_PATTERNS:
+                    for match in re.findall(pattern, content):
+                        results.append((pattern, match))
+        except Exception as e:
+            return [("error", f"Impossible de scanner {path}: {e}")]
+        return results
+
     def execute(self, task):
-        project_path = task.get("project_path")
-        if not project_path or not os.path.exists(project_path):
-            return {"error": "Chemin de projet invalide ou manquant."}
-
-        keys_found = {}
-        api_keywords = ["OPENAI_API_KEY", "HUGGINGFACE_TOKEN", "STRIPE_SECRET_KEY", "API_KEY", "TOKEN"]
-
-        for root, _, files in os.walk(project_path):
-            for file in files:
-                if file.endswith((".env", ".json", ".py", ".txt")):
-                    path = os.path.join(root, file)
-                    try:
-                        with open(path, "r", encoding="utf-8") as f:
-                            content = f.read()
-                            for keyword in api_keywords:
-                                if keyword in content:
-                                    if file not in keys_found:
-                                        keys_found[file] = []
-                                    keys_found[file].append(keyword)
-                    except Exception:
-                        continue
-
-        if not keys_found:
-            return {"result": "Aucune clé API détectée dans le projet."}
-
-        return {
-            "result": "Clés API détectées dans certains fichiers.",
-            "details": keys_found
-        }
+        folder = task.get("project_path")
+        all_found = {}
+        if not folder or not os.path.isdir(folder):
+            return {"error": "Chemin projet invalide."}
+        for root, _, files in os.walk(folder):
+            for f in files:
+                if f.endswith((".py", ".js", ".env", ".json", ".yml", ".yaml")):
+                    path = os.path.join(root, f)
+                    found = self.scan_file(path)
+                    if found:
+                        all_found[path] = found
+        return {"api_key_leaks": all_found or "Aucune clé API trouvée."}
