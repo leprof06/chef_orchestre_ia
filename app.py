@@ -67,9 +67,9 @@ def analyser():
 
 def parse_user_input(user_input, project_path=None):
     user_input = user_input.lower()
-    if "améliore" in user_input:
-        return {"manager": "code", "type": "improve_code", "project_path": project_path}
-    if "analyse" in user_input or "scanner" in user_input:
+    if "optimise" in user_input or "améliore" in user_input:
+        return {"manager": "code", "type": "optimize_code", "project_path": project_path}
+    elif "analyse" in user_input or "scanner" in user_input:
         return {"manager": "analyse", "type": "analyse_code", "project_path": project_path}
     elif "clé api" in user_input or "api key" in user_input:
         return {"manager": "analyse", "type": "detect_api_keys", "project_path": project_path}
@@ -77,8 +77,6 @@ def parse_user_input(user_input, project_path=None):
         return {"manager": "devops", "type": "manage_dependencies", "project_path": project_path}
     elif "génère" in user_input or "écris" in user_input:
         return {"manager": "code", "type": "generate_code", "project_path": project_path}
-    elif "optimise" in user_input:
-        return {"manager": "code", "type": "optimize_code", "project_path": project_path}
     elif "debug" in user_input or "corrige" in user_input:
         return {"manager": "code", "type": "debug_code", "project_path": project_path}
     elif "agent" in user_input and "crée" in user_input:

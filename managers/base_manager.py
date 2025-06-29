@@ -1,4 +1,6 @@
 
+# managers/base_manager.py
+
 class BaseManager:
     def __init__(self, name):
         self.name = name
