@@ -1,16 +1,11 @@
 # agents/base_agent.py
+from agents.base_agent import BaseAgent
 
-class BaseAgent:
-    """
-    Agent de base que tous les agents personnalisés doivent hériter.
-    Fournit une interface commune pour l'exécution.
-    """
-
-    def __init__(self, name="BaseAgent"):
-        self.name = name
+class CodeAgent(BaseAgent):
+    def __init__(self):
+        super().__init__("CodeAgent")
 
     def execute(self, task):
-        """
-        Méthode à surcharger pour exécuter le comportement de l'agent.
-        """
-        raise NotImplementedError("La méthode 'execute' doit être implémentée dans les sous-classes.")
+        # Simule la génération de code (exemple simplifié)
+        instruction = task.get("instruction") or "Aucune instruction fournie."
+        return f"Code généré automatiquement pour l'instruction : '{instruction}'"

@@ -1,8 +1,9 @@
-# agents/debug_agent.py
-
 from agents.base_agent import BaseAgent
 
 class DebugAgent(BaseAgent):
-    def handle_task(self, task_description: str) -> str:
-        # Logique de détection et correction de bugs dans un code fourni
-        return f"(Simulation) Correction appliquée pour : {task_description}"
+    def __init__(self):
+        super().__init__("DebugAgent")
+
+    def execute(self, task):
+        project_path = task.get("project_path", "")
+        return f"Débogage effectué sur le projet : {project_path or '(aucun chemin)'}"
