@@ -1,6 +1,5 @@
 from flask import render_template, redirect, url_for, session, flash, request, jsonify
-import os
-import tempfile
+import os, tempfile
 import zipfile
 from werkzeug.utils import secure_filename
 from agents.utils.import_connectors import (
@@ -65,17 +64,21 @@ def register_routes(app, orchestrator):
                 file_path = os.path.join(temp_dir, file.filename)
                 os.makedirs(os.path.dirname(file_path), exist_ok=True)
                 file.save(file_path)
-            # (Optionnel) : zippe le dossier importé pour le traiter comme un projet
-            # zip_path = temp_dir + ".zip"
-            # with zipfile.ZipFile(zip_path, 'w') as zipf:
-            #     for root, dirs, files_in_dir in os.walk(temp_dir):
-            #         for file_in_dir in files_in_dir:
-            #             abs_file = os.path.join(root, file_in_dir)
-            #             rel_file = os.path.relpath(abs_file, temp_dir)
-            #             zipf.write(abs_file, rel_file)
-            # Ici tu peux appeler ta logique d’import zip si tu veux
-            flash("Dossier importé avec succès !", "success")
-        return redirect(url_for('projet_existant'))
+            # Déduire un nom de projet (exemple simple : nom du dossier racine du premier fichier)
+            first_file = files[0].filename if files else "Projet_importé"
+            project_name = first_file.split('/')[0] if '/' in first_file else "Projet_importé"
+            # Créer le projet dans l’orchestrator
+            success = orchestrator.create_new_project(project_name)
+            if success:
+                session['current_project'] = project_name
+                flash(f"Projet '{project_name}' importé et prêt à l’emploi !", "success")
+                # Ici tu pourrais aussi déplacer tous les fichiers dans le workspace du projet
+            else:
+                flash("Erreur lors de la création du projet à partir du dossier importé.", "danger")
+                return redirect(url_for('projet_existant'))
+
+        return redirect(url_for('chat_projet'))
+
 
     @app.route("/import/github", methods=["POST"])
     def import_github():

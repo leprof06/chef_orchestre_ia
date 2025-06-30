@@ -31,7 +31,7 @@
 
         <div class="import-sources">
 <!-- === Import d’un dossier local via explorateur natif (100% web compatible) === -->
-<form method="POST" action="{{ url_for('import_local_folder') }}" enctype="multipart/form-data" style="margin-top:1em;">
+<form method="POST" action="{{ url_for('import_local_folder_route') }}" enctype="multipart/form-data" style="margin-top:1em;">
     <label for="folderInput"><strong>Importer un dossier local :</strong></label><br>
     <input id="folderInput" name="folder" type="file" webkitdirectory directory multiple required>
     <button type="submit" class="btn-main" style="margin-top:0.5em;">Importer ce dossier</button>
@@ -161,12 +161,11 @@
     </div>
 </body>
 </html>
-
         </div>
         <div class="footer">
             <small>
                 Made by Yann & GPT-CodeAssistant.<br>
-                IA orchestrateur modulaire • 2024
+                IA orchestrateur modulaire • 2025
             </small>
         </div>
     </div>
