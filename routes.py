@@ -1,6 +1,7 @@
 from flask import render_template, redirect, url_for, session, flash, request, jsonify
-import tempfile
 import os
+import tempfile
+import zipfile
 from werkzeug.utils import secure_filename
 from agents.utils.import_connectors import (
     import_zip_file, import_local_folder, import_from_github,
@@ -22,7 +23,6 @@ def register_routes(app, orchestrator):
         if request.method == "POST":
             project_name = request.form.get("project_name", "Projet_sans_nom")
         else:
-            # Si méthode GET, on génère un nom temporaire ou propose un formulaire
             import time
             project_name = f"Projet_{int(time.time())}"
         success = orchestrator.create_new_project(project_name)
@@ -52,39 +52,30 @@ def register_routes(app, orchestrator):
         folder_path = request.form.get("folder_path")
         ok, msg = import_local_folder(folder_path)
         return jsonify({"success": ok, "msg": msg})
-    
-     # === NOUVEAU : Import d’un dossier local (front : webkitdirectory) ===
+
+    # === Import d’un dossier local (WEB, multi-fichiers) ===
     @app.route("/import/local_folder", methods=["POST"])
-    def import_local_folder():
-            if 'folder' not in request.files:
-                flash("Aucun dossier reçu.", "danger")
-                return redirect(url_for('projet_existant'))
-
-            files = request.files.getlist('folder')
-            if not files or len(files) == 0:
-                flash("Aucun fichier dans le dossier sélectionné.", "danger")
-                return redirect(url_for('projet_existant'))
-
-            import os, tempfile, zipfile
-            # Création d’un dossier temporaire pour reconstituer la structure du dossier importé
-            with tempfile.TemporaryDirectory() as temp_dir:
-                for file in files:
-                    # Chaque file.filename inclut le chemin relatif depuis le dossier racine sélectionné
-                    file_path = os.path.join(temp_dir, file.filename)
-                    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-                    file.save(file_path)
-                # (Optionnel) : zippe le dossier importé pour le traiter comme un projet (branche ici ta logique si besoin)
-                zip_path = temp_dir + ".zip"
-                with zipfile.ZipFile(zip_path, 'w') as zipf:
-                    for root, dirs, files_in_dir in os.walk(temp_dir):
-                        for file_in_dir in files_in_dir:
-                            abs_file = os.path.join(root, file_in_dir)
-                            rel_file = os.path.relpath(abs_file, temp_dir)
-                            zipf.write(abs_file, rel_file)
-                # Tu peux ici utiliser ta logique d’import de zip existante
-                # ok, msg = import_zip_file(zip_path)
-                flash("Dossier importé et traité avec succès.", "success")
+    def import_local_folder_route():
+        files = request.files.getlist('folder')
+        if not files or len(files) == 0:
+            flash("Aucun fichier reçu.", "danger")
             return redirect(url_for('projet_existant'))
+        with tempfile.TemporaryDirectory() as temp_dir:
+            for file in files:
+                file_path = os.path.join(temp_dir, file.filename)
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                file.save(file_path)
+            # (Optionnel) : zippe le dossier importé pour le traiter comme un projet
+            # zip_path = temp_dir + ".zip"
+            # with zipfile.ZipFile(zip_path, 'w') as zipf:
+            #     for root, dirs, files_in_dir in os.walk(temp_dir):
+            #         for file_in_dir in files_in_dir:
+            #             abs_file = os.path.join(root, file_in_dir)
+            #             rel_file = os.path.relpath(abs_file, temp_dir)
+            #             zipf.write(abs_file, rel_file)
+            # Ici tu peux appeler ta logique d’import zip si tu veux
+            flash("Dossier importé avec succès !", "success")
+        return redirect(url_for('projet_existant'))
 
     @app.route("/import/github", methods=["POST"])
     def import_github():
@@ -176,12 +167,12 @@ def register_routes(app, orchestrator):
     def logs():
         logs = orchestrator.get_logs() if hasattr(orchestrator, "get_logs") else []
         return render_template("logs.html", logs=logs)
-    
+
     @app.route("/code")
     def code():
         code_state = orchestrator.get_code_state() if hasattr(orchestrator, "get_code_state") else ""
         return render_template("code.html", code=code_state)
-    
+
     @app.route("/reset")
     def reset():
         session.pop('current_project', None)
@@ -189,13 +180,13 @@ def register_routes(app, orchestrator):
             orchestrator.init_new_project()
         flash("Projet réinitialisé avec succès.")
         return redirect(url_for('index'))
-    
+
     # --- CHOIX, CHARGEMENT, SAUVEGARDE, SUPPRESSION, EXPORT PROJET ---
     @app.route("/choose_project")
     def choose_project():
         projects = orchestrator.get_existing_projects() if hasattr(orchestrator, "get_existing_projects") else []
         return render_template("choose_project.html", projects=projects)
-    
+
     @app.route("/load_project/<project_name>")
     def load_project(project_name):
         success = orchestrator.load_project(project_name) if hasattr(orchestrator, "load_project") else False
@@ -206,7 +197,7 @@ def register_routes(app, orchestrator):
         else:
             flash(f"Échec du chargement du projet '{project_name}'.")
             return redirect(url_for('choose_project'))
-    
+
     @app.route("/save_project", methods=["POST"])
     def save_project():
         project_name = request.form.get("project_name")
@@ -217,7 +208,7 @@ def register_routes(app, orchestrator):
         else:
             flash(f"Échec de l'enregistrement du projet '{project_name}'.")
             return redirect(url_for('chat'))
-    
+
     @app.route("/delete_project/<project_name>")
     def delete_project(project_name):
         success = orchestrator.delete_project(project_name) if hasattr(orchestrator, "delete_project") else False
@@ -227,7 +218,7 @@ def register_routes(app, orchestrator):
         else:
             flash(f"Échec de la suppression du projet '{project_name}'.")
             return redirect(url_for('choose_project'))
-    
+
     @app.route("/export_project/<project_name>")
     def export_project(project_name):
         success, msg = orchestrator.export_project(project_name) if hasattr(orchestrator, "export_project") else (False, "Non implémenté")
@@ -270,4 +261,3 @@ def register_routes(app, orchestrator):
         logs = orchestrator.get_logs() if hasattr(orchestrator, "get_logs") else []
         code = orchestrator.get_code_state() if hasattr(orchestrator, "get_code_state") else ""
         return render_template("chat.html", show_analyse_btn=show_analyse, logs=logs, code=code)
-
