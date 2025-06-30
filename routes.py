@@ -2,6 +2,7 @@ from flask import render_template, redirect, url_for, session, flash, request, j
 import os, tempfile
 import zipfile
 from werkzeug.utils import secure_filename
+from agents.utils.ai_api_connector import AIAPIConnector
 from agents.utils.import_connectors import (
     import_zip_file, import_local_folder, import_from_github,
     import_from_gdrive, import_from_dropbox, import_from_icloud,
@@ -10,7 +11,8 @@ from agents.utils.import_connectors import (
 )
 
 def register_routes(app, orchestrator):
-
+    ai_connector = AIAPIConnector()
+    
     # --- ACCUEIL ---
     @app.route("/", methods=["GET"])
     def index():
@@ -154,26 +156,35 @@ def register_routes(app, orchestrator):
     @app.route("/chat", methods=["GET", "POST"])
     def chat():
         if request.method == "POST":
-            message = request.form.get("message", "")
+            message = request.form.get("message", "").strip()
             if not message:
                 return "Veuillez écrire un message.", 400
-            result = orchestrator.chat(message)
-            return result, 200
+            # Appel direct à l’API réelle via le connecteur IA
+            try:
+                result = ai_connector.chat(message)
+            except Exception as e:
+                return f"Erreur lors de la requête IA : {e}", 500
+            return str(result), 200  # Réponse texte brute pour le frontend
         return render_template("chat.html")
 
     @app.route("/analyser", methods=["POST"])
     def analyser():
         project_path = request.form.get("project_path")
-        result = orchestrator.analyse_project(project_path)
-        # Gère le retour selon le type
+        if not project_path or not os.path.isdir(project_path):
+            return jsonify({"success": False, "msg": "Chemin projet invalide ou manquant."})
+
+        try:
+            # Appelle le vrai analyse_manager (qui ne doit RIEN simuler !)
+            result = orchestrator.analyse_manager.handle("analyse_code", project_path)
+        except Exception as e:
+            return jsonify({"success": False, "msg": f"Erreur analyse : {e}"})
+
         if isinstance(result, dict):
-            if "error" in result:
-                return result["error"], 400
-            lines = []
-            for k, v in result.items():
-                lines.append(f"{k}: {v}")
-            return "\n".join(lines), 200
-        return str(result), 200
+            # Retourne chaque info d’analyse clairement
+            msg = "\n".join(f"{k}: {v}" for k, v in result.items())
+            return jsonify({"success": True, "msg": msg})
+        else:
+            return jsonify({"success": True, "msg": str(result)})
 
     # --- LOGS, CODE, RESET, GESTION PROJETS ---
     @app.route("/logs")
