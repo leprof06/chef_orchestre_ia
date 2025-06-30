@@ -1,16 +1,13 @@
-# agents/data_analysis_agent.py
-
-from agents.base_agent import BaseAgent
-from config import CONFIG
 import os
 import json
+from agents.base_agent import BaseAgent
+from config import CONFIG
 from agents.utils.syntax_checker import analyze_folder_for_syntax
 from agents.utils.project_structure import analyser_structure_projet
 from agents.utils.file_tools import list_files_recursive
 from agents.utils.big_file_detector import find_big_files
 from agents.utils.scan_secrets import scan_for_secrets
 from agents.utils.logger import get_logger
-
 
 try:
     import openai
@@ -23,37 +20,37 @@ except ImportError:
 
 class DataAnalysisAgent(BaseAgent):
     """
-    Agent d'analyse de projet :
-    - Analyse syntaxique Python/JS/JSON
-    - Analyse dépendances (requirements.txt, package.json)
-    - Peut utiliser OpenAI, HuggingFace, ou fallback local pour résumé intelligent
-    - Donne un rapport complet pour le front
+    Analyse de projet ultra-complète :
+    - Vérifie la syntaxe sur .py/.json/.js
+    - Analyse les dépendances Python/Node
+    - Cherche des fichiers lourds
+    - Cherche des secrets dans le code (API key, tokens)
+    - Peut résumer via OpenAI/HF si la clé est dispo
+    - Structure le résultat pour affichage + log
     """
     def __init__(self):
         super().__init__("DataAnalysisAgent")
         self.has_openai = bool(CONFIG.get("use_openai") and openai)
         self.has_hf = bool(CONFIG.get("use_huggingface") and requests)
+        self.logger = get_logger(__name__)
 
     def analyze_syntax(self, folder_path):
-        result = {}
+        errors = {}
         for root, _, files in os.walk(folder_path):
             for f in files:
                 ext = f.split('.')[-1].lower()
                 path = os.path.join(root, f)
-                if ext == "py":
-                    try:
+                try:
+                    if ext == "py":
                         with open(path, "r", encoding="utf-8") as file:
                             import ast
                             ast.parse(file.read())
-                    except Exception as e:
-                        result[path] = f"Erreur Python: {e}"
-                elif ext == "json":
-                    try:
+                    elif ext == "json":
                         with open(path, "r", encoding="utf-8") as file:
                             json.load(file)
-                    except Exception as e:
-                        result[path] = f"Erreur JSON: {e}"
-        return result
+                except Exception as e:
+                    errors[path] = f"Erreur {ext.upper()} : {e}"
+        return errors
 
     def analyze_dependencies(self, folder_path):
         reqs, pkgs = [], []
@@ -104,14 +101,26 @@ class DataAnalysisAgent(BaseAgent):
     def analyze_with_huggingface(self, folder_path):
         if not self.has_hf:
             return None
-        return "Analyse HuggingFace (à brancher sur un modèle de ton choix)"
+        # Placeholder pour une future extension HuggingFace
+        return "Analyse HuggingFace non implémentée (à brancher sur un modèle de ton choix)."
 
     def execute(self, task):
         folder_path = task.get("project_path")
         if not folder_path or not os.path.exists(folder_path):
             return {"error": "Chemin projet invalide."}
+
+        # Analyse syntaxique
         syntax = self.analyze_syntax(folder_path)
+        # Analyse structurelle (arborescence, Flask, etc)
+        structure = analyser_structure_projet(folder_path)
+        # Dépendances
         deps = self.analyze_dependencies(folder_path)
+        # Recherche de secrets/tokens
+        secrets = scan_for_secrets(folder_path)
+        # Recherche fichiers lourds
+        big_files = find_big_files(folder_path, size_limit_mb=5)
+
+        # IA - Résumé global
         ia_resume = None
         if self.has_openai:
             ia_resume = self.analyze_with_openai(folder_path)
@@ -119,8 +128,27 @@ class DataAnalysisAgent(BaseAgent):
             ia_resume = self.analyze_with_huggingface(folder_path)
         else:
             ia_resume = "Résumé IA indisponible (mode local)."
+
+        # Résumé humain lisible pour l'UI
+        readable = (
+            f"**Analyse du projet :**\n"
+            f"- Erreurs de syntaxe : {'Aucune' if not syntax else json.dumps(syntax, ensure_ascii=False, indent=2)}\n"
+            f"- Dépendances : {deps}\n"
+            f"- Secrets détectés : {secrets or 'Aucun'}\n"
+            f"- Fichiers volumineux (>5Mo) : {big_files or 'Aucun'}\n"
+            f"- Structure : {structure}\n"
+            f"- Résumé IA : {ia_resume}\n"
+        )
+
+        # Résultat structuré pour API/front/logs
         return {
-            "syntax_errors": syntax or "OK",
-            "dependencies": deps,
-            "ia_resume": ia_resume
+            "result": {
+                "syntax_errors": syntax or "OK",
+                "dependencies": deps,
+                "secrets": secrets,
+                "big_files": big_files,
+                "structure": structure,
+                "ia_resume": ia_resume,
+            },
+            "answer": readable
         }

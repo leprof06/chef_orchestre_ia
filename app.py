@@ -1,19 +1,17 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import os
+import json
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from werkzeug.utils import secure_filename
-from agents.utils.cache_tools import purge_large_or_old_cache
 from orchestrator import Orchestrator
 
-# 🔥 Au tout début, purge le cache (optionnel mais conseillé)
-purge_large_or_old_cache()
-
-orchestrator = Orchestrator()
 UPLOAD_FOLDER = os.path.join('workspace', 'uploads')
 ALLOWED_EXTENSIONS = {'zip'}
 
 app = Flask(__name__)
 app.secret_key = 'dev-secret-1234'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+orchestrator = Orchestrator()
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -26,7 +24,7 @@ def index():
 def nouveau_projet():
     session.pop('current_project', None)
     orchestrator.init_new_project()
-    return render_template("chat.html", show_analyse_btn=False, logs=[], code="")
+    return render_template("chat.html", show_analyse_btn=False)
 
 @app.route("/projet-existant")
 def projet_existant():
@@ -48,7 +46,6 @@ def upload_projet_existant():
         file.save(save_path)
         session['current_project'] = save_path
         orchestrator.init_from_zip(save_path)
-        flash(f"Projet chargé depuis {save_path}.")
         return redirect(url_for('chat_projet'))
     else:
         flash("Fichier non valide (format attendu : .zip)")
@@ -66,13 +63,13 @@ def analyser():
     project_path = session.get('current_project')
     result = orchestrator.analyse_project(project_path)
     logs = orchestrator.get_logs()
-    return jsonify({"logs": logs if logs else ["Aucun log généré"]})
+    # On formate les logs proprement
+    logs_txt = "\n".join([json.dumps(log, ensure_ascii=False, indent=2) if isinstance(log, dict) else str(log) for log in logs])
+    return jsonify({"logs": logs_txt if logs_txt else "Aucun log généré"})
 
 def parse_user_input(user_input, project_path=None):
     user_input = user_input.lower()
-    if "optimise" in user_input or "améliore" in user_input:
-        return {"manager": "code", "type": "optimize_code", "project_path": project_path}
-    elif "analyse" in user_input or "scanner" in user_input:
+    if "analyse" in user_input or "scanner" in user_input:
         return {"manager": "analyse", "type": "analyse_code", "project_path": project_path}
     elif "clé api" in user_input or "api key" in user_input:
         return {"manager": "analyse", "type": "detect_api_keys", "project_path": project_path}
@@ -80,6 +77,8 @@ def parse_user_input(user_input, project_path=None):
         return {"manager": "devops", "type": "manage_dependencies", "project_path": project_path}
     elif "génère" in user_input or "écris" in user_input:
         return {"manager": "code", "type": "generate_code", "project_path": project_path}
+    elif "optimise" in user_input or "améliore" in user_input:
+        return {"manager": "code", "type": "optimize_code", "project_path": project_path}
     elif "debug" in user_input or "corrige" in user_input:
         return {"manager": "code", "type": "debug_code", "project_path": project_path}
     elif "agent" in user_input and "crée" in user_input:
@@ -98,17 +97,19 @@ def chat_api():
     project_path = data.get("project_path")
     if not project_path:
         project_path = session.get("current_project")
+
     if not user_input:
         return jsonify({"error": "Message vide"}), 400
+
     task = parse_user_input(user_input, project_path)
     result = orchestrator.dispatch_task(task)
-    # Afficher le résultat principal ou message d’erreur
-    if isinstance(result, dict) and "error" in result:
-        return jsonify({"result": result["error"]})
-    elif isinstance(result, dict):
-        return jsonify({"result": result.get("result", result)})
+
+    # --- Correction ici : on retourne TOUJOURS une chaîne ---
+    if isinstance(result, dict):
+        answer = result.get("answer") or result.get("result") or json.dumps(result, indent=2, ensure_ascii=False)
     else:
-        return jsonify({"result": str(result)})
+        answer = str(result)
+    return jsonify({"answer": answer})
 
 if __name__ == "__main__":
     app.run(debug=True)

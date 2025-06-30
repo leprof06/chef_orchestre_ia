@@ -4,93 +4,95 @@
     <meta charset="UTF-8">
     <title>Chef d'Orchestre IA – Projet en cours</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; background: #f8f8fc;}
-        .main { max-width: 1200px; margin: 0 auto; display: flex; min-height: 80vh;}
-        .left, .right { padding: 24px;}
-        .left { flex: 1 1 40%; background: #f9f9f9; border-right: 1px solid #eee;}
-        .right { flex: 2 1 60%;}
-        .timeline-title { font-weight: bold; margin-bottom: 10px;}
-        .timeline-logs { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 16px; min-height: 80px;}
-        .analyse-btn { background: gold; color: #222; border: none; padding: 8px 18px; border-radius: 8px; font-weight: bold; cursor: pointer;}
-        .analyse-btn:disabled { opacity: 0.7; }
-        .code-zone { background: #f2f2fa; border-radius: 10px; min-height: 300px; margin-top: 10px; padding: 10px;}
-        .ai-badge { display: inline-block; background: #cde8ff; color: #026; border-radius: 4px; padding: 2px 8px; font-size: 13px; margin-bottom: 10px;}
-        #chatForm { margin-top: 40px; display: flex; gap: 8px;}
-        #chatInput { flex: 1; border-radius: 8px; border: 1px solid #aaa; font-size: 17px; padding: 7px;}
-        #chatForm button { border-radius: 8px; border: none; background: #333; color: #fff; padding: 8px 24px; font-size: 16px;}
-        .log-entry { margin-bottom: 4px; }
-        @media (max-width: 700px) {
-            .main { flex-direction: column;}
-            .left, .right { padding: 14px;}
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #fafbff; margin: 0; }
+        .container { display: flex; flex-direction: row; width: 100vw; height: 100vh; }
+        .panel-left { flex: 1; padding: 30px; background: #f8fafc; }
+        .panel-right { flex: 2; padding: 30px; background: #f3f4f7; }
+        #logs-output { 
+            background: #222; color: #fafafa; padding: 18px; 
+            border-radius: 8px; margin-bottom: 24px; font-size: 1.02em; 
+            white-space: pre-wrap; min-height: 180px; font-family: 'Fira Mono', monospace;
         }
+        #code-output { 
+            background: #191e2b; color: #ffe8a3; padding: 16px; 
+            border-radius: 8px; min-height: 220px; font-family: 'Fira Mono', monospace; 
+            font-size: 1.04em;
+        }
+        .chat-form { display: flex; gap: 12px; margin-top: 22px; }
+        .chat-form input[type="text"] {
+            flex: 1; padding: 10px 14px; border: 1px solid #e0e7ef; border-radius: 6px;
+            font-size: 1em; background: #fff;
+        }
+        .chat-form button {
+            padding: 10px 22px; background: #4f8cff; color: #fff;
+            border: none; border-radius: 6px; font-size: 1em;
+            cursor: pointer; transition: background 0.15s;
+        }
+        .chat-form button:hover { background: #2957c6; }
     </style>
 </head>
 <body>
-    <div class="main">
-        <div class="left">
-            <div class="timeline-title">Étapes & Logs Orchestrateur</div>
-            <div class="timeline-logs" id="timelineLogs">
-                {% if logs %}
-                    {% for log in logs %}
-                        <div class="log-entry">{{ log }}</div>
-                    {% endfor %}
-                {% endif %}
-            </div>
-            {% if show_analyse_btn %}
-                <button class="analyse-btn" id="analyseBtn" type="button">Analyser le projet</button>
-            {% endif %}
-        </div>
-        <div class="right">
-            <div class="timeline-title">Zone de code</div>
-            <div class="code-zone" id="codeZone">
-                <pre>{{ code or "# Code à afficher ici" }}</pre>
-            </div>
-            <form id="chatForm" autocomplete="off">
-                <span class="ai-badge">AI</span>
-                <input type="text" id="chatInput" placeholder="Décrivez ce que vous souhaitez faire..." />
-                <button type="submit">Envoyer</button>
+<div class="container">
+    <!-- Colonne gauche : logs / étapes -->
+    <div class="panel-left">
+        <h2>Étapes &amp; Logs Orchestrateur</h2>
+        <div id="logs-output"></div>
+        {% if show_analyse_btn %}
+            <form id="analyse-form" action="/analyser" method="post">
+                <button type="submit" style="background:#ffd600;color:#222;font-weight:bold;">Analyser le projet</button>
             </form>
-        </div>
+        {% endif %}
     </div>
-    <script>
-        // Chat AJAX
-        document.getElementById('chatForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            if(!message) return;
 
-            const response = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message })
-            });
-            const data = await response.json();
-            // Affiche la réponse IA dans la timeline/logs
-            const logs = document.getElementById('timelineLogs');
-            logs.innerHTML += `<div class="log-entry"><b>IA :</b> ${data.result ? data.result : JSON.stringify(data)}</div>`;
-            input.value = '';
-        });
+    <!-- Colonne droite : zone de code + chat -->
+    <div class="panel-right">
+        <h3>Zone de code</h3>
+        <pre id="code-output">{% if code %}{{ code }}{% else %}# Code extrait du ZIP (simulé){% endif %}</pre>
+        
+        <form class="chat-form" id="mon-formulaire">
+            <input type="text" id="input-message" placeholder="Décrivez ce que vous souhaitez faire…" autocomplete="off" />
+            <button type="submit">Envoyer</button>
+        </form>
+    </div>
+</div>
 
-        // Analyse bouton AJAX
-        const analyseBtn = document.getElementById('analyseBtn');
-        if(analyseBtn){
-            analyseBtn.onclick = async function(){
-                analyseBtn.disabled = true;
-                analyseBtn.innerText = "Analyse en cours...";
-                const resp = await fetch('/analyser', { method: 'POST' });
-                const data = await resp.json();
-                // Affiche les logs
-                const logs = document.getElementById('timelineLogs');
-                if(data.logs){
-                    data.logs.forEach(log => {
-                        logs.innerHTML += `<div class="log-entry"><b>Analyse :</b> ${log}</div>`;
-                    });
-                }
-                analyseBtn.disabled = false;
-                analyseBtn.innerText = "Analyser le projet";
-            }
-        }
-    </script>
+<script>
+function afficherLog(data) {
+    // data.answer (texte IA), data.logs, data.result...
+    let out = "";
+    if (data.answer) out = data.answer;
+    else if (data.logs) out = data.logs;
+    else out = JSON.stringify(data, null, 2);
+    document.getElementById("logs-output").textContent = out;
+}
+
+// Pour le chat
+document.getElementById("mon-formulaire").onsubmit = function(e) {
+    e.preventDefault();
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        message: document.getElementById("input-message").value
+      })
+    })
+    .then(r => r.json())
+    .then(afficherLog)
+    .catch(err => { document.getElementById("logs-output").textContent = "Erreur réseau : " + err; });
+    document.getElementById("input-message").value = "";
+};
+
+// Pour le bouton "Analyser le projet" (soumission AJAX)
+const analyseForm = document.getElementById("analyse-form");
+if(analyseForm){
+    analyseForm.onsubmit = function(e){
+        e.preventDefault();
+        fetch("/analyser", {method: "POST"})
+        .then(r => r.json())
+        .then(afficherLog)
+        .catch(err => { document.getElementById("logs-output").textContent = "Erreur analyse : " + err; });
+    }
+}
+</script>
 </body>
 </html>
