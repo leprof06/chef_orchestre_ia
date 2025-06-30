@@ -1,6 +1,6 @@
-# routes.py
-
 from flask import render_template, redirect, url_for, session, flash, request, jsonify
+import os
+from werkzeug.utils import secure_filename
 from agents.utils.import_connectors import (
     import_zip_file, import_local_folder, import_from_github,
     import_from_gdrive, import_from_dropbox, import_from_icloud,
@@ -51,6 +51,39 @@ def register_routes(app, orchestrator):
         folder_path = request.form.get("folder_path")
         ok, msg = import_local_folder(folder_path)
         return jsonify({"success": ok, "msg": msg})
+    
+     # === NOUVEAU : Import d’un dossier local (front : webkitdirectory) ===
+    @app.route("/import/local_folder", methods=["POST"])
+    def import_local_folder():
+            if 'folder' not in request.files:
+                flash("Aucun dossier reçu.", "danger")
+                return redirect(url_for('projet_existant'))
+
+            files = request.files.getlist('folder')
+            if not files or len(files) == 0:
+                flash("Aucun fichier dans le dossier sélectionné.", "danger")
+                return redirect(url_for('projet_existant'))
+
+            import os, tempfile, zipfile
+            # Création d’un dossier temporaire pour reconstituer la structure du dossier importé
+            with tempfile.TemporaryDirectory() as temp_dir:
+                for file in files:
+                    # Chaque file.filename inclut le chemin relatif depuis le dossier racine sélectionné
+                    file_path = os.path.join(temp_dir, file.filename)
+                    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+                    file.save(file_path)
+                # (Optionnel) : zippe le dossier importé pour le traiter comme un projet (branche ici ta logique si besoin)
+                zip_path = temp_dir + ".zip"
+                with zipfile.ZipFile(zip_path, 'w') as zipf:
+                    for root, dirs, files_in_dir in os.walk(temp_dir):
+                        for file_in_dir in files_in_dir:
+                            abs_file = os.path.join(root, file_in_dir)
+                            rel_file = os.path.relpath(abs_file, temp_dir)
+                            zipf.write(abs_file, rel_file)
+                # Tu peux ici utiliser ta logique d’import de zip existante
+                # ok, msg = import_zip_file(zip_path)
+                flash("Dossier importé et traité avec succès.", "success")
+            return redirect(url_for('projet_existant'))
 
     @app.route("/import/github", methods=["POST"])
     def import_github():

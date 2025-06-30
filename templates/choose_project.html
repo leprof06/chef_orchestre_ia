@@ -30,6 +30,14 @@
         <div class="subtitle">Sélectionne une source pour importer ou ouvrir ton projet.</div>
 
         <div class="import-sources">
+    <!-- === Import d’un dossier local (NOUVEAU) === -->
+    <form method="POST" action="{{ url_for('import_local_folder') }}" enctype="multipart/form-data" style="margin-top:1em;">
+        <label for="folderInput"><strong>Importer un dossier local :</strong></label><br>
+        <input id="folderInput" name="folder" type="file" webkitdirectory directory multiple required>
+        <button type="submit" class="btn-main" style="margin-top:0.5em;">Importer ce dossier</button>
+        <span style="font-size:0.93em;color:#678;">(Tous les fichiers et sous-dossiers seront importés)</span>
+    </form>
+
 
             <!-- Import ZIP -->
             <form action="{{ url_for('upload_projet_existant') }}" method="post" enctype="multipart/form-data">
