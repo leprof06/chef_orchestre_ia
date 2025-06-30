@@ -1,13 +1,10 @@
+# agents/utils/syntax_checker.py
+
 import ast
 import json
 import os
 
-# --- PYTHON ---
 def check_python_syntax(filepath):
-    """
-    Vérifie la syntaxe d'un fichier Python.
-    Retourne True si syntaxe OK, sinon message d'erreur.
-    """
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             source = f.read()
@@ -16,12 +13,7 @@ def check_python_syntax(filepath):
     except Exception as e:
         return f"Erreur syntaxe Python: {e}"
 
-# --- JSON ---
 def check_json_syntax(filepath):
-    """
-    Vérifie la syntaxe d'un fichier JSON.
-    Retourne True si syntaxe OK, sinon message d'erreur.
-    """
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             json.load(f)
@@ -29,41 +21,26 @@ def check_json_syntax(filepath):
     except Exception as e:
         return f"Erreur syntaxe JSON: {e}"
 
-# --- JS (binaire simple, pas d'analyse AST) ---
 def check_js_syntax(filepath):
-    """
-    Vérifie rapidement la syntaxe d'un fichier JS (brut, via try/except exec si dispo, sinon basique).
-    Retourne True si syntaxe OK, sinon message d'erreur.
-    """
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             source = f.read()
-        compile(source, filepath, "exec")  # ATTENTION : ça ne gère pas JS réel, mais détecte fichier non-Python !
+        compile(source, filepath, "exec")  # ATTENTION : pas de JS réel !
         return True
     except Exception as e:
-        return f"Erreur syntaxe JS (test basique, à améliorer) : {e}"
+        return f"Erreur syntaxe JS (test basique): {e}"
 
-# --- HTML ---
 def check_html_syntax(filepath):
-    """
-    Vérifie la structure d'un fichier HTML (recherche basique de balises fermées, peut être amélioré).
-    """
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             html = f.read()
-        # Simple test : balise <html> et </html>
         if '<html' in html.lower() and '</html>' in html.lower():
             return True
         return "Fichier HTML incomplet"
     except Exception as e:
         return f"Erreur lecture HTML: {e}"
 
-# --- SCAN DOSSIER (multi-langage) ---
 def analyze_folder_for_syntax(folder, extensions=(".py", ".json", ".js", ".html")):
-    """
-    Analyse récursivement un dossier, vérifie la syntaxe de tous les fichiers supportés.
-    Retourne un dict {fichier: result}.
-    """
     results = {}
     for root, _, files in os.walk(folder):
         for f in files:

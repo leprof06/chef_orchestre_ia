@@ -1,16 +1,16 @@
 from agents.base_agent import BaseAgent
-from agents.utils.syntax_checker import check_python_syntax, check_json_syntax
-from agents.utils.code_inspector import is_code_file, extract_code_structure
+from agents.utils.syntax_checker import check_python_syntax
+from agents.utils.code_inspector import extract_code_structure
 from agents.utils.docstring_extractor import extract_docstrings
-from agents.utils.project_structure import analyser_fichier, analyse_structure_globale
+from agents.utils.project_structure import analyse_structure_globale
 from agents.utils.project_overview import should_analyze_file, detect_capabilities
 from agents.utils.scan_vulnerabilities import scan_python_vuln
 from agents.utils.logger import get_logger
 
 class DataAnalysisAgent(BaseAgent):
     """
-    Analyse le code source, détecte la structure, la qualité, les erreurs, les failles, etc.
-    Utilise massivement les outils du dossier utils.
+    Analyse le code source : structure, qualité, erreurs, failles, docstrings, etc.
+    Utilise les outils de utils (allégé au max).
     """
     def __init__(self):
         super().__init__("DataAnalysisAgent")
@@ -20,15 +20,27 @@ class DataAnalysisAgent(BaseAgent):
         project_path = task.get("project_path")
         if not project_path:
             return {"error": "Aucun chemin de projet fourni."}
-        # Exemple : analyser la structure, checker la syntaxe
+
+        self.logger.info(f"Analyse projet {project_path}")
+        # Analyse la structure globale
         structure = analyse_structure_globale(project_path)
-        syntax_ok = check_python_syntax(project_path)
+        # Vérifie la syntaxe de tous les fichiers .py
+        syntax_report = check_python_syntax(project_path)
+        # Cherche les vulnérabilités
         vuln_report = scan_python_vuln(project_path)
+        # (Option) Extrait les docstrings de tous les .py
+        docstrings = extract_docstrings(project_path)
+
+        # Capabilities/global
+        capabilities = detect_capabilities(project_path)
+
         result = {
             "structure": structure,
-            "syntax": syntax_ok,
+            "syntax": syntax_report,
             "vulnerabilities": vuln_report,
+            "docstrings": docstrings,
+            "capabilities": capabilities,
         }
         return result
 
-    # (autres méthodes métier à laisser inchangées si présentes dans ton fichier original)
+    # (Autres méthodes éventuelles à laisser inchangées)
