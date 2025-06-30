@@ -154,16 +154,44 @@ def register_routes(app, orchestrator):
     @app.route("/chat", methods=["GET", "POST"])
     def chat():
         if request.method == "POST":
-            message = request.form.get("message")
-            result = orchestrator.chat(message) if hasattr(orchestrator, "chat") else "Réponse IA simulée : à implémenter"
-            return jsonify({"reply": result})   # <-- Seul "reply" envoyé
+            message = request.form.get("message", "")
+            if not message:
+                return "Veuillez écrire un message.", 400
+
+            # Appel orchestrator.chat() si dispo
+            if hasattr(orchestrator, "chat"):
+                result = orchestrator.chat(message)
+            else:
+                result = "Réponse IA simulée : à implémenter"
+
+            # Si jamais la réponse est un dict (par erreur ou IA), on l'affiche joliment
+            if isinstance(result, dict):
+                # Erreur ? -> message lisible
+                if "error" in result:
+                    return result["error"], 200
+                # Sinon, affiche tout le dict proprement
+                return "\n".join(f"{k}: {v}" for k, v in result.items()), 200
+
+            # Si c'est déjà du texte
+            return str(result), 200
+
+        # GET : Affiche la page de chat
         return render_template("chat.html")
 
     @app.route("/analyser", methods=["POST"])
     def analyser():
         project_path = request.form.get("project_path")
-        result = orchestrator.analyse_manager.handle_task({"project_path": project_path}) if hasattr(orchestrator, "analyse_manager") else "Analyse simulée : à implémenter"
-        return jsonify({"result": result})     # <-- Seul "result" envoyé
+        result = orchestrator.analyse_manager.handle("analyse_code", project_path) \
+            if hasattr(orchestrator, "analyse_manager") else "Analyse simulée : à implémenter"
+        if isinstance(result, dict):
+            if "error" in result:
+                return jsonify({"success": False, "msg": result["error"]})
+            # Sinon, renvoie tout le dict en texte lisible
+            lines = []
+            for k, v in result.items():
+                lines.append(f"{k}: {v}")
+            return jsonify({"success": True, "msg": "\n".join(lines)})
+        return jsonify({"success": True, "msg": str(result)})
 
     # --- LOGS, CODE, RESET, GESTION PROJETS ---
     @app.route("/logs")

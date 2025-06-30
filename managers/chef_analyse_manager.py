@@ -1,33 +1,35 @@
 from managers.base_manager import BaseManager
 from agents.data_analysis_agent import DataAnalysisAgent
 from agents.api_key_scanner_agent import APIKeyScannerAgent
-from agents.external_api_liaison_agent import ExternalAPILiaisonAgent  # à commenter si ce fichier/agent n'existe pas
+from agents.dependency_agent import DependencyAgent
 
 class ChefAnalyseManager(BaseManager):
+    """
+    Manager analyse : centralise DataAnalysisAgent, APIKeyScannerAgent, DependencyAgent, etc.
+    """
     def __init__(self):
         super().__init__("ChefAnalyseManager")
         self.agents = {
-            "data_analysis": DataAnalysisAgent(),
-            "api_key_scanner": APIKeyScannerAgent(),
-            # "external_api_liaison": ExternalAPILiaisonAgent(),  # à activer si tu veux
+            "analyse_code": DataAnalysisAgent(),
+            "scan_api_keys": APIKeyScannerAgent(),
+            "dependency": DependencyAgent(),
         }
 
     def dispatch(self, task):
-        task_type = task.get("type")
-        if task_type == "analyse_code":
-            return self.agents["data_analysis"].execute(task)
-        elif task_type == "detect_api_keys":
-            return self.agents["api_key_scanner"].execute(task)
-        # elif task_type == "external_api_liaison":
-        #     return self.agents["external_api_liaison"].execute(task)
+        task_type = task.get("type", "")
+        project_path = task.get("project_path", None)
+        if task_type in self.agents:
+            # On passe project_path dans un dict si besoin
+            return self.agents[task_type].execute({"project_path": project_path})
+        elif task_type == "analyse_code":
+            return self.agents["analyse_code"].execute({"project_path": project_path})
         else:
-            return {"error": "Type de tâche inconnu pour ChefAnalyseManager"}
+            return {"error": f"Type de tâche inconnu pour ChefAnalyseManager : '{task_type}'"}
 
     def handle(self, action_type, project_path=None):
         task = {"type": action_type, "project_path": project_path}
         return self.dispatch(task)
 
-    def handle_task(self, params):
-        return self.dispatch(params)
-
-    # Toutes les autres méthodes/metiers déjà présentes dans ta classe sont conservées ci-dessous !
+    def handle_task(self, task):
+        # Permet d'être appelé directement depuis orchestrator/analyser route
+        return self.dispatch(task)
