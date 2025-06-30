@@ -156,38 +156,24 @@ def register_routes(app, orchestrator):
         if request.method == "POST":
             message = request.form.get("message", "")
             if not message:
-                return jsonify({"reply": "Veuillez écrire un message."})
-            if hasattr(orchestrator, "chat"):
-                result = orchestrator.chat(message)
-            else:
-                result = "Réponse IA simulée : à implémenter"
-            # Toujours retourner une string dans "reply"
-            if isinstance(result, dict):
-                # On convertit le dict en string lisible
-                if "error" in result:
-                    return jsonify({"reply": result["error"]})
-                return jsonify({"reply": "\n".join(f"{k}: {v}" for k, v in result.items())})
-            return jsonify({"reply": str(result)})
+                return "Veuillez écrire un message.", 400
+            result = orchestrator.chat(message)
+            return result, 200
         return render_template("chat.html")
 
     @app.route("/analyser", methods=["POST"])
     def analyser():
-        project_path = request.form.get("project_path", "")
-        if not project_path:
-            return jsonify({"success": False, "msg": "Aucun chemin de projet fourni."})
-        if hasattr(orchestrator, "analyse_manager"):
-            result = orchestrator.analyse_manager.handle("analyse_code", project_path)
-        else:
-            result = "Analyse simulée : à implémenter"
-        # Gestion du format de retour
+        project_path = request.form.get("project_path")
+        result = orchestrator.analyse_project(project_path)
+        # Gère le retour selon le type
         if isinstance(result, dict):
             if "error" in result:
-                return jsonify({"success": False, "msg": result["error"]})
+                return result["error"], 400
             lines = []
             for k, v in result.items():
                 lines.append(f"{k}: {v}")
-            return jsonify({"success": True, "msg": "\n".join(lines)})
-        return jsonify({"success": True, "msg": str(result)})
+            return "\n".join(lines), 200
+        return str(result), 200
 
     # --- LOGS, CODE, RESET, GESTION PROJETS ---
     @app.route("/logs")
