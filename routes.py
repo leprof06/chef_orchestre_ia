@@ -156,14 +156,14 @@ def register_routes(app, orchestrator):
         if request.method == "POST":
             message = request.form.get("message")
             result = orchestrator.chat(message) if hasattr(orchestrator, "chat") else "Réponse IA simulée : à implémenter"
-            return jsonify({"reply": result})
+            return jsonify({"reply": result})   # <-- Seul "reply" envoyé
         return render_template("chat.html")
 
     @app.route("/analyser", methods=["POST"])
     def analyser():
         project_path = request.form.get("project_path")
         result = orchestrator.analyse_manager.handle_task({"project_path": project_path}) if hasattr(orchestrator, "analyse_manager") else "Analyse simulée : à implémenter"
-        return jsonify({"result": result})
+        return jsonify({"result": result})     # <-- Seul "result" envoyé
 
     # --- LOGS, CODE, RESET, GESTION PROJETS ---
     @app.route("/logs")
