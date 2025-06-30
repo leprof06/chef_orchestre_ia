@@ -1,20 +1,17 @@
 from managers.base_manager import BaseManager
 from agents.ux_agent import UXAgent
 
-class ChefUxManager(BaseManager):
+class ChefUXManager(BaseManager):
+    """
+    Manager UX : gère les tâches liées à l’expérience utilisateur (UI/UX).
+    """
     def __init__(self):
-        super().__init__("ChefUxManager")
-        self.agents = {
-            "ux": UXAgent(),
-        }
+        super().__init__("ChefUXManager")
+        self.ux_agent = UXAgent()
 
     def dispatch(self, task):
-        task_type = task.get("type")
-
-        if task_type == "analyze_ui":
-            return self.agents["ui_feedback"].execute(task)
-        else:
-            return {"error": "Type de tâche inconnu pour ChefUXManager"}
+        # Toutes les tâches UX passent par UXAgent (ajoute d’autres agents si besoin)
+        return self.ux_agent.execute(task)
 
     def handle(self, action_type, project_path=None):
         task = {"type": action_type, "project_path": project_path}

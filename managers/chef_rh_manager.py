@@ -1,22 +1,18 @@
 from managers.base_manager import BaseManager
 from agents.rh_agent import RHAgent
 
-class ChefRhManager(BaseManager):
+class ChefRHManager(BaseManager):
+    """
+    Manager RH : gère les tâches liées aux ressources humaines (RH).
+    """
     def __init__(self):
-        super().__init__("ChefRhManager")
-        self.agents = {
-            "rh": RHAgent(),
-        }
+        super().__init__("ChefRHManager")
+        self.rh_agent = RHAgent()
 
     def dispatch(self, task):
         task_type = task.get("type")
-
-        if task_type == "create_agent":
-            return self.agents["factory"].create_agent(task)
-        elif task_type == "create_manager":
-            return self.agents["factory"].create_manager(task)
-        else:
-            return {"error": "Type de tâche inconnu pour ChefRHManager"}
+        # Un seul agent RH pour l'instant :
+        return self.rh_agent.execute(task)
 
     def handle(self, action_type, project_path=None):
         task = {"type": action_type, "project_path": project_path}
