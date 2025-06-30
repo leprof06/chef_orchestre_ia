@@ -156,7 +156,7 @@ def register_routes(app, orchestrator):
         if request.method == "POST":
             message = request.form.get("message", "")
             if not message:
-                return "Veuillez écrire un message.", 400
+                return jsonify({"reply": "Veuillez écrire un message."}), 400
 
             # Appel orchestrator.chat() si dispo
             if hasattr(orchestrator, "chat"):
@@ -164,34 +164,22 @@ def register_routes(app, orchestrator):
             else:
                 result = "Réponse IA simulée : à implémenter"
 
-            # Si jamais la réponse est un dict (par erreur ou IA), on l'affiche joliment
-            if isinstance(result, dict):
-                # Erreur ? -> message lisible
-                if "error" in result:
-                    return result["error"], 200
-                # Sinon, affiche tout le dict proprement
-                return "\n".join(f"{k}: {v}" for k, v in result.items()), 200
-
-            # Si c'est déjà du texte
-            return str(result), 200
-
+            # Toujours renvoyer la clé "reply" pour le JS côté front
+            return jsonify({"reply": result})
         # GET : Affiche la page de chat
         return render_template("chat.html")
 
     @app.route("/analyser", methods=["POST"])
     def analyser():
         project_path = request.form.get("project_path")
-        result = orchestrator.analyse_manager.handle("analyse_code", project_path) \
-            if hasattr(orchestrator, "analyse_manager") else "Analyse simulée : à implémenter"
-        if isinstance(result, dict):
-            if "error" in result:
-                return jsonify({"success": False, "msg": result["error"]})
-            # Sinon, renvoie tout le dict en texte lisible
-            lines = []
-            for k, v in result.items():
-                lines.append(f"{k}: {v}")
-            return jsonify({"success": True, "msg": "\n".join(lines)})
-        return jsonify({"success": True, "msg": str(result)})
+        if not project_path:
+            return jsonify({"success": False, "msg": "Aucun chemin de projet fourni."})
+        if hasattr(orchestrator, "analyse_manager"):
+            # On standardise : result dans "result"
+            result = orchestrator.analyse_manager.handle_task({"project_path": project_path})
+            return jsonify({"success": True, "result": result})
+        else:
+            return jsonify({"success": False, "msg": "Analyse simulée : à implémenter"})
 
     # --- LOGS, CODE, RESET, GESTION PROJETS ---
     @app.route("/logs")
