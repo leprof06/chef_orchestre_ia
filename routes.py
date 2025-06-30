@@ -68,6 +68,22 @@ def register_routes(app, orchestrator):
         return redirect(url_for('index'))
 
     # --- PROJETS (choix, chargement, sauvegarde, suppression, export) ---
+    @app.route("/nouveau_projet", methods=["GET", "POST"])
+    def nouveau_projet():
+        if request.method == "POST":
+            project_name = request.form.get("project_name")
+            # On peut avoir une logique pour créer un nouveau projet vide dans Orchestrator
+            success = orchestrator.create_new_project(project_name)  # À implémenter côté orchestrator
+            if success:
+                session['current_project'] = project_name
+                flash(f"Nouveau projet '{project_name}' créé avec succès.")
+                return redirect(url_for('chat_projet'))
+            else:
+                flash(f"Erreur lors de la création du projet '{project_name}'.")
+                return redirect(url_for('choose_project'))
+        # GET : afficher un simple formulaire pour saisir le nom du projet
+        return render_template("nouveau_projet.html")
+
     @app.route("/choose_project")
     def choose_project():
         projects = orchestrator.get_existing_projects()

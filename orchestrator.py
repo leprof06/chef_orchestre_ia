@@ -68,3 +68,14 @@ class Orchestrator:
             res = f"[Orchestrator] Tâche inconnue : {manager}/{action_type}"
         self.logs.append(res)
         return {"result": res}
+
+    def create_new_project(self, project_name):
+        # Ici tu peux créer le dossier, l’initialiser, etc.
+        # Retourne True si tout s’est bien passé, False sinon.
+        try:
+            # Ex: créer le dossier du projet, ajouter à la liste, etc.
+            # ... logique ici ...
+            return True
+        except Exception as e:
+            print("Erreur création projet :", e)
+            return False
