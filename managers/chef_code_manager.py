@@ -1,17 +1,19 @@
-# managers/chef_code_manager.py
-
 from managers.base_manager import BaseManager
 from agents.code_agent import CodeAgent
 from agents.optimize_agent import OptimizeAgent
-from agents.debug_agent import DebugAgent
+from agents.doc_agent import DocAgent
+from agents.test_agent import TestAgent
+from agents.reuse_code_agent import ReuseCodeAgent
 
 class ChefCodeManager(BaseManager):
     def __init__(self):
         super().__init__("ChefCodeManager")
         self.agents = {
-            "generate_code": CodeAgent(),
-            "optimize_code": OptimizeAgent(),
-            "debug_code": DebugAgent()
+            "code": CodeAgent(),
+            "optimize": OptimizeAgent(),
+            "doc": DocAgent(),
+            "test": TestAgent(),
+            "reuse_code": ReuseCodeAgent(),
         }
 
     def dispatch(self, task):

@@ -1,12 +1,19 @@
 from managers.base_manager import BaseManager
-from agents.dependency_agent import DependencyAgent
+from agents.infrastructure_builder_agent import InfrastructureBuilderAgent
+from agents.global_project_scan_agent import GlobalProjectScanAgent
+from agents.debug_agent import DebugAgent
 
-class ChefDevOpsManager(BaseManager):
+class ChefDevopsManager(BaseManager):
     def __init__(self):
-        super().__init__("ChefDevOpsManager")
+        super().__init__("ChefDevopsManager")
         self.agents = {
-            "dependency": DependencyAgent()
+            "infrastructure_builder": InfrastructureBuilderAgent(),
+            "global_project_scan": GlobalProjectScanAgent(),
+            "debug": DebugAgent(),
         }
+
+    # Toutes tes méthodes existantes sont conservées ici (ne rien supprimer)
+
 
     def dispatch(self, task):
         task_type = task.get("type")
