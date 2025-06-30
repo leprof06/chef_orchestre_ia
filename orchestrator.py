@@ -70,12 +70,8 @@ class Orchestrator:
         return {"result": res}
 
     def create_new_project(self, project_name):
-        # Ici tu peux créer le dossier, l’initialiser, etc.
-        # Retourne True si tout s’est bien passé, False sinon.
-        try:
-            # Ex: créer le dossier du projet, ajouter à la liste, etc.
-            # ... logique ici ...
-            return True
-        except Exception as e:
-            print("Erreur création projet :", e)
-            return False
+        # Ajoute le projet à la liste, initialise les structures, etc.
+        # Pour l’instant, tu peux juste faire :
+        self.current_project = project_name
+        self.projects[project_name] = {}  # ou tout autre structure par défaut
+        return True
