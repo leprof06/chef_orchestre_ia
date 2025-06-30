@@ -1,7 +1,7 @@
 from agents.base_agent import BaseAgent
-from agents.utils.project_scanner import extract_imports
 from agents.utils.code_inspector import is_code_file
 from agents.utils.logger import get_logger
+from agents.utils.project_scanner import extract_imports
 
 class ReuseCodeAgent(BaseAgent):
     """

@@ -84,3 +84,29 @@ def scan_workspace_in_detail(base_folder, output_json=True):
             json.dump(rapport, f, indent=2, ensure_ascii=False)
         return rapport, output_path
     return rapport
+
+def extract_imports(content):
+    """
+    Extrait la liste des imports d’un code Python donné (par AST).
+    """
+    import ast
+    try:
+        tree = ast.parse(content)
+        imports = []
+        for node in tree.body:
+            if isinstance(node, ast.Import):
+                for n in node.names:
+                    imports.append(n.name)
+            elif isinstance(node, ast.ImportFrom):
+                mod = node.module if node.module else ''
+                for n in node.names:
+                    if mod:
+                        imports.append(f"{mod}.{n.name}")
+                    else:
+                        imports.append(n.name)
+        return imports
+    except Exception as e:
+        return []
+
+# Compatibilité rétroactive avec anciens imports
+scan_all_projects = scan_workspace_in_detail
