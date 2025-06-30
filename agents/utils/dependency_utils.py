@@ -1,36 +1,36 @@
 import os
 import subprocess
-from pathlib import Path
 
 def detect_missing_python_dependencies(project_path):
-    req_path = Path(project_path) / "requirements.txt"
-    missing = []
-    if req_path.exists():
-        with open(req_path, encoding="utf-8") as f:
-            for line in f:
-                package = line.strip().split("==")[0]
-                if not is_package_installed(package):
-                    missing.append(package)
+    """
+    Scan requirements.txt et retourne la liste des packages manquants.
+    """
+    req_path = os.path.join(project_path, "requirements.txt")
+    if not os.path.isfile(req_path):
+        return []
+    with open(req_path) as f:
+        requirements = [l.strip() for l in f.readlines() if l.strip() and not l.startswith("#")]
+    import pkg_resources
+    installed = {pkg.key for pkg in pkg_resources.working_set}
+    missing = [r for r in requirements if r.split("==")[0].lower() not in installed]
     return missing
 
-def is_package_installed(package):
+def is_package_installed(package_name):
     try:
-        subprocess.check_output(["python", "-c", f"import {package}"], stderr=subprocess.DEVNULL)
+        __import__(package_name)
         return True
-    except subprocess.CalledProcessError:
+    except ImportError:
         return False
-    except ModuleNotFoundError:
-        return False
-
-def install_python_packages(packages):
-    for package in packages:
-        print(f"📦 Installation de {package}...")
-        subprocess.call(["pip", "install", package])
 
 def detect_and_install_dependencies(project_path):
+    """
+    Détecte les dépendances manquantes et tente de les installer automatiquement.
+    """
     missing = detect_missing_python_dependencies(project_path)
-    if missing:
-        print("🚨 Dépendances manquantes détectées :", ", ".join(missing))
-        install_python_packages(missing)
-    else:
-        print("✅ Toutes les dépendances Python sont présentes.")
+    if not missing:
+        return {"installed": True, "missing": []}
+    try:
+        subprocess.check_call(["pip", "install"] + missing)
+        return {"installed": True, "missing": []}
+    except Exception as e:
+        return {"installed": False, "missing": missing, "error": str(e)}

@@ -1,23 +1,44 @@
-# agents/utils/scan_vulnerabilities.py
+import os
+import ast
+import json
 
-import subprocess
+def scan_python_vuln(project_path):
+    """
+    Scan basique : cherche des patterns risqués dans du code Python (ex : eval, exec, os.system, etc.)
+    Retourne {fichier: [pattern]} pour chaque occurence.
+    """
+    RISKY = ("eval(", "exec(", "os.system", "subprocess.", "input(")
+    found = {}
+    for root, _, files in os.walk(project_path):
+        for f in files:
+            if f.endswith('.py'):
+                path = os.path.join(root, f)
+                try:
+                    with open(path, "r", encoding="utf-8") as file:
+                        content = file.read()
+                    matches = [r for r in RISKY if r in content]
+                    if matches:
+                        found[path] = matches
+                except Exception:
+                    continue
+    return found
 
-def scan_python_vuln(requirements_path="requirements.txt"):
-    try:
-        res = subprocess.run(
-            ["safety", "check", "-r", requirements_path, "--full-report"],
-            capture_output=True, text=True, timeout=30
-        )
-        return res.stdout
-    except Exception as e:
-        return f"Erreur Safety : {e}"
-
-def scan_node_vuln(folder):
-    try:
-        res = subprocess.run(
-            ["npm", "audit", "--json"], cwd=folder,
-            capture_output=True, text=True, timeout=30
-        )
-        return res.stdout
-    except Exception as e:
-        return f"Erreur npm audit : {e}"
+def scan_node_vuln(project_path):
+    """
+    Scan ultra simple : cherche 'child_process', 'eval', 'require(' dans les .js
+    """
+    RISKY = ("child_process", "eval(", "require(")
+    found = {}
+    for root, _, files in os.walk(project_path):
+        for f in files:
+            if f.endswith('.js'):
+                path = os.path.join(root, f)
+                try:
+                    with open(path, "r", encoding="utf-8") as file:
+                        content = file.read()
+                    matches = [r for r in RISKY if r in content]
+                    if matches:
+                        found[path] = matches
+                except Exception:
+                    continue
+    return found

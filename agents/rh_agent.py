@@ -1,40 +1,30 @@
-# agents/rh_agent.py
-
 from agents.base_agent import BaseAgent
-from config import CONFIG
-
-try:
-    import openai
-except ImportError:
-    openai = None
+from agents.utils.project_structure import analyse_structure_globale
+from agents.utils.syntax_checker import analyze_folder_for_syntax
+from agents.utils.scan_secrets import scan_for_secrets
+from agents.utils.logger import get_logger
 
 class RHAgent(BaseAgent):
     """
-    Peut créer dynamiquement un nouvel agent ou manager sur demande.
-    Génère le squelette Python correspondant et l'ajoute à l'équipe.
+    RHAgent : évalue la structure projet, la syntaxe et la confidentialité (fuites de secrets) pour l’aspect "équipe/ressources humaines".
+    Utilise les utils project_structure, syntax_checker, scan_secrets.
     """
     def __init__(self):
         super().__init__("RHAgent")
-        self.has_openai = bool(CONFIG.get("use_openai") and openai)
-
-    def generate_agent_code(self, agent_name, role_desc):
-        if self.has_openai:
-            prompt = f"Crée une classe Python pour un agent nommé {agent_name} dont le rôle est : {role_desc}. Donne-moi juste le code Python."
-            try:
-                response = openai.ChatCompletion.create(
-                    model="gpt-4",
-                    messages=[
-                        {"role": "system", "content": "Tu es expert en génération de classes Python pour des IA."},
-                        {"role": "user", "content": prompt}
-                    ]
-                )
-                return response["choices"][0]["message"]["content"].strip()
-            except Exception as e:
-                return f"Erreur OpenAI : {str(e)}"
-        else:
-            return f"# class {agent_name}(BaseAgent):\n    # Rôle : {role_desc}\n    pass\n"
+        self.logger = get_logger("RHAgent")
 
     def execute(self, task):
-        agent_name = task.get("agent_name", "NewAgent")
-        role_desc = task.get("role_desc", "Agent spécialisé.")
-        return {"generated_code": self.generate_agent_code(agent_name, role_desc)}
+        project_path = task.get("project_path")
+        if not project_path:
+            return {"error": "Aucun chemin de projet fourni."}
+        structure = analyse_structure_globale(project_path)
+        syntax = analyze_folder_for_syntax(project_path)
+        secrets = scan_for_secrets(project_path)
+        result = {
+            "structure": structure,
+            "syntax": syntax,
+            "secrets": secrets,
+        }
+        return result
+
+    # (autres méthodes métier à laisser inchangées si présentes dans ton fichier original)

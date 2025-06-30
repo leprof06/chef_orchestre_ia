@@ -1,50 +1,27 @@
-# agents/infrastructure_builder_agent.py
-
 from agents.base_agent import BaseAgent
-from config import CONFIG
-
-try:
-    import openai
-except ImportError:
-    openai = None
+from agents.utils.project_structure import analyse_structure_globale
+from agents.utils.project_overview import detect_capabilities
+from agents.utils.logger import get_logger
 
 class InfrastructureBuilderAgent(BaseAgent):
     """
-    Génère des fichiers d'infrastructure pour le projet (Dockerfile, docker-compose, workflows CI/CD).
-    Peut aussi créer la structure de dossiers conseillée.
+    Analyse la structure globale du projet et prépare l'infrastructure requise (dossiers, fichiers, etc).
+    Utilise analyse_structure_globale et detect_capabilities des utils.
     """
     def __init__(self):
         super().__init__("InfrastructureBuilderAgent")
-        self.has_openai = bool(CONFIG.get("use_openai") and openai)
-
-    def infra_with_openai(self, stack="python"):
-        if not self.has_openai:
-            return None
-        prompt = f"Génère une arborescence de projet moderne et les fichiers d'infra associés (Dockerfile, docker-compose, GitHub Actions) pour un projet {stack}."
-        try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": f"Expert DevOps et CI/CD {stack}."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            return response["choices"][0]["message"]["content"].strip()
-        except Exception as e:
-            return f"Erreur OpenAI : {str(e)}"
-
-    def local_infra(self, stack="python"):
-        infra = {
-            "folders": ["src/", "tests/", "docs/", "infra/", "data/"],
-            "dockerfile": "FROM python:3.11\nWORKDIR /app\nCOPY . .\nRUN pip install -r requirements.txt\nCMD ['python', 'app.py']",
-            "github_actions": ".github/workflows/ci.yml"
-        }
-        return infra
+        self.logger = get_logger("InfrastructureBuilderAgent")
 
     def execute(self, task):
-        stack = task.get("stack", "python")
-        if self.has_openai:
-            result = self.infra_with_openai(stack)
-        else:
-            result = self.local_infra(stack)
-        return {"infrastructure": result}
+        project_path = task.get("project_path")
+        if not project_path:
+            return {"error": "Aucun chemin de projet fourni."}
+        structure = analyse_structure_globale(project_path)
+        capabilities = detect_capabilities(project_path)
+        result = {
+            "structure": structure,
+            "capabilities": capabilities,
+        }
+        return result
+
+    # (autres méthodes métier à laisser inchangées si présentes dans ton fichier original)

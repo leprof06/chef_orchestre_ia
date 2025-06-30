@@ -1,16 +1,32 @@
+import os
 import json
 
-def load_json_file(path):
+def read_json(filepath):
     try:
-        with open(path, "r", encoding="utf-8") as f:
+        with open(filepath, "r", encoding="utf-8") as f:
             return json.load(f)
-    except (OSError, json.JSONDecodeError) as e:
-        print(f"❌ Erreur de lecture JSON : {e}")
-        return []
+    except Exception:
+        return None
 
-def save_json_file(path, data):
+def write_json(filepath, data):
     try:
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
-    except OSError as e:
-        print(f"❌ Erreur d'écriture JSON : {e}")
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        return True
+    except Exception:
+        return False
+
+def read_txt(filepath):
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception:
+        return None
+
+def write_txt(filepath, data):
+    try:
+        with open(filepath, "w", encoding="utf-8") as f:
+            f.write(data)
+        return True
+    except Exception:
+        return False

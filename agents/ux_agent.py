@@ -1,56 +1,24 @@
-# agents/ux_agent.py
-
 from agents.base_agent import BaseAgent
-from config import CONFIG
-from agents.utils.file_tools import read_file_safe, list_files_recursive
+from agents.utils.project_overview import detect_capabilities
 from agents.utils.logger import get_logger
-
-try:
-    import openai
-except ImportError:
-    openai = None
 
 class UXAgent(BaseAgent):
     """
-    Analyse d’interface utilisateur (HTML/CSS/JS) et propose des améliorations UX/UI.
-    Peut utiliser OpenAI, sinon vérifie des points basiques d’accessibilité.
+    UXAgent : analyse les capacités techniques pour améliorer l’UX.
+    Utilise detect_capabilities des utils.
     """
     def __init__(self):
         super().__init__("UXAgent")
-        self.has_openai = bool(CONFIG.get("use_openai") and openai)
-
-    def ux_with_openai(self, html_code):
-        if not self.has_openai:
-            return None
-        prompt = f"Analyse ce code HTML/CSS/JS et propose les améliorations UX/UI prioritaires avec des exemples de code si possible :\n\n{html_code}\n"
-        try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": "Expert UX/UI design."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            return response["choices"][0]["message"]["content"].strip()
-        except Exception as e:
-            return f"Erreur OpenAI : {str(e)}"
-
-    def local_ux(self, html_code):
-        tips = [
-            "✔️ Vérifier que toutes les images ont un attribut alt.",
-            "✔️ Assurer un contraste suffisant des couleurs pour l’accessibilité.",
-            "✔️ Tester la navigation complète au clavier (tab, entrée).",
-            "✔️ Ajouter des labels explicites aux champs de formulaire.",
-            "✔️ Utiliser des boutons bien visibles pour chaque action clé.",
-            "✔️ Privilégier une mise en page responsive (CSS media queries).",
-            "✔️ Prévoir des messages de confirmation ou d’erreur clairs après chaque action.",
-        ]
-        return "\n".join(tips)
+        self.logger = get_logger("UXAgent")
 
     def execute(self, task):
-        html_code = task.get("code", "")
-        if self.has_openai:
-            result = self.ux_with_openai(html_code)
-        else:
-            result = self.local_ux(html_code)
-        return {"ux_advice": result}
+        project_path = task.get("project_path")
+        if not project_path:
+            return {"error": "Aucun chemin de projet fourni."}
+        capabilities = detect_capabilities(project_path)
+        result = {
+            "capabilities": capabilities
+        }
+        return result
+
+    # (autres méthodes métier à laisser inchangées si présentes dans ton fichier original)

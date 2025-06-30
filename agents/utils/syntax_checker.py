@@ -1,57 +1,80 @@
-# agents/utils/syntax_checker.py
-
 import ast
 import json
 import os
 
-def check_python_syntax(code):
+# --- PYTHON ---
+def check_python_syntax(filepath):
+    """
+    Vérifie la syntaxe d'un fichier Python.
+    Retourne True si syntaxe OK, sinon message d'erreur.
+    """
     try:
-        ast.parse(code)
-        return None
+        with open(filepath, "r", encoding="utf-8") as f:
+            source = f.read()
+        ast.parse(source)
+        return True
     except Exception as e:
-        return str(e)
+        return f"Erreur syntaxe Python: {e}"
 
-def check_json_syntax(code):
+# --- JSON ---
+def check_json_syntax(filepath):
+    """
+    Vérifie la syntaxe d'un fichier JSON.
+    Retourne True si syntaxe OK, sinon message d'erreur.
+    """
     try:
-        json.loads(code)
-        return None
+        with open(filepath, "r", encoding="utf-8") as f:
+            json.load(f)
+        return True
     except Exception as e:
-        return str(e)
+        return f"Erreur syntaxe JSON: {e}"
 
-def check_js_syntax(code):
-    # Très basique, tu peux intégrer esprima si tu veux aller plus loin
-    if "function" not in code and "=>" not in code:
-        return "Aucune fonction JS détectée (test basique)."
-    return None
+# --- JS (binaire simple, pas d'analyse AST) ---
+def check_js_syntax(filepath):
+    """
+    Vérifie rapidement la syntaxe d'un fichier JS (brut, via try/except exec si dispo, sinon basique).
+    Retourne True si syntaxe OK, sinon message d'erreur.
+    """
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            source = f.read()
+        compile(source, filepath, "exec")  # ATTENTION : ça ne gère pas JS réel, mais détecte fichier non-Python !
+        return True
+    except Exception as e:
+        return f"Erreur syntaxe JS (test basique, à améliorer) : {e}"
 
-def check_html_syntax(code):
-    # Basique : vérifie balises de base
-    if "<html" not in code.lower():
-        return "Pas de balise <html> détectée."
-    if "<body" not in code.lower():
-        return "Pas de balise <body> détectée."
-    return None
+# --- HTML ---
+def check_html_syntax(filepath):
+    """
+    Vérifie la structure d'un fichier HTML (recherche basique de balises fermées, peut être amélioré).
+    """
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            html = f.read()
+        # Simple test : balise <html> et </html>
+        if '<html' in html.lower() and '</html>' in html.lower():
+            return True
+        return "Fichier HTML incomplet"
+    except Exception as e:
+        return f"Erreur lecture HTML: {e}"
 
-def analyze_folder_for_syntax(folder):
-    errors = {}
+# --- SCAN DOSSIER (multi-langage) ---
+def analyze_folder_for_syntax(folder, extensions=(".py", ".json", ".js", ".html")):
+    """
+    Analyse récursivement un dossier, vérifie la syntaxe de tous les fichiers supportés.
+    Retourne un dict {fichier: result}.
+    """
+    results = {}
     for root, _, files in os.walk(folder):
         for f in files:
             path = os.path.join(root, f)
-            try:
-                with open(path, "r", encoding="utf-8", errors="ignore") as file:
-                    code = file.read()
+            if f.endswith(extensions):
                 if f.endswith(".py"):
-                    err = check_python_syntax(code)
+                    results[path] = check_python_syntax(path)
                 elif f.endswith(".json"):
-                    err = check_json_syntax(code)
+                    results[path] = check_json_syntax(path)
                 elif f.endswith(".js"):
-                    err = check_js_syntax(code)
+                    results[path] = check_js_syntax(path)
                 elif f.endswith(".html"):
-                    err = check_html_syntax(code)
-                else:
-                    err = None
-                if err:
-                    errors[path] = err
-            except Exception as e:
-                errors[path] = f"Erreur de lecture : {e}"
-    return errors
+                    results[path] = check_html_syntax(path)
+    return results

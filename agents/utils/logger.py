@@ -1,8 +1,10 @@
-# agents/utils/logger.py
-
 import logging
 
 def get_logger(name, log_file=None, level=logging.INFO):
+    """
+    Retourne un logger formaté prêt à l’emploi (singleton par nom).
+    Permet de logger vers la console OU un fichier (ou les deux si besoin), avec niveau paramétrable.
+    """
     logger = logging.getLogger(name)
     logger.setLevel(level)
     if not logger.handlers:

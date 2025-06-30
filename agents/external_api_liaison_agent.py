@@ -1,90 +1,30 @@
-# agents/external_api_miaison_agent.py
-
 from agents.base_agent import BaseAgent
-import os
-import re
+from agents.utils.dependency_utils import detect_and_install_dependencies
+from agents.utils.import_connectors import import_from_github, import_from_http, import_from_s3
 from agents.utils.logger import get_logger
-import requests
 
-try:
-    import openai
-except ImportError:
-    openai = None
-from config import CONFIG
-
-class ExternalAPIMiaisonAgent(BaseAgent):
+class ExternalAPILiaisonAgent(BaseAgent):
     """
-    Analyse le projet pour repérer toutes les dépendances à des API externes connues.
-    Utilise OpenAI si possible, sinon des heuristiques locales.
+    S'occupe de la gestion, liaison et intégration d'API externes au projet.
+    Utilise dependency_utils et import_connectors des utils.
     """
-    COMMON_API_HINTS = [
-        ("openai", r"openai[\.\[]"),
-        ("huggingface", r"huggingface|transformers[\.\[]"),
-        ("github", r"github[\.\[]"),
-        ("deepl", r"deepl[\.\[]"),
-        ("stripe", r"stripe[\.\[]"),
-        ("google", r"google\.cloud|googleapiclient|googlemaps"),
-    ]
-
     def __init__(self):
-        super().__init__("ExternalAPIMiaisonAgent")
-        self.has_openai = bool(CONFIG.get("use_openai") and openai)
-
-    def scan_file(self, path):
-        hits = []
-        try:
-            with open(path, "r", encoding="utf-8", errors="ignore") as f:
-                content = f.read()
-                for api, pattern in self.COMMON_API_HINTS:
-                    if re.search(pattern, content, re.I):
-                        hits.append(api)
-        except Exception:
-            pass
-        return set(hits)
-
-    def local_scan(self, folder):
-        apis = set()
-        for root, _, files in os.walk(folder):
-            for f in files:
-                if f.endswith((".py", ".js", ".json", ".yml", ".yaml")):
-                    path = os.path.join(root, f)
-                    apis |= self.scan_file(path)
-        return list(apis)
-
-    def scan_with_openai(self, folder):
-        if not self.has_openai:
-            return None
-        files = []
-        for root, _, fs in os.walk(folder):
-            for f in fs:
-                if f.endswith((".py", ".js", ".json")):
-                    try:
-                        with open(os.path.join(root, f), "r", encoding="utf-8") as file:
-                            files.append(file.read()[:800])
-                    except Exception:
-                        pass
-        prompt = (
-            "Liste toutes les APIs externes (ex : openai, huggingface, github, stripe, etc.) utilisées ou nécessaires dans ce projet :"
-            + "\n\n".join(files[:5])
-        )
-        try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": "Tu es un auditeur d'intégrations API dans le code."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            return response["choices"][0]["message"]["content"].strip()
-        except Exception as e:
-            return f"Erreur OpenAI: {str(e)}"
+        super().__init__("ExternalAPILiaisonAgent")
+        self.logger = get_logger("ExternalAPILiaisonAgent")
 
     def execute(self, task):
-        folder = task.get("project_path")
-        if not folder or not os.path.isdir(folder):
-            return {"error": "Chemin projet invalide."}
-        if self.has_openai:
-            ai_result = self.scan_with_openai(folder)
-            return {"external_apis": ai_result}
-        apis = self.local_scan(folder)
-        return {"external_apis": apis or "Aucune API externe détectée."}
+        api_source = task.get("api_source")
+        project_path = task.get("project_path")
+        if not api_source or not project_path:
+            return {"error": "Source API ou chemin projet manquant."}
+        if api_source.startswith("github.com"):
+            result = import_from_github(api_source)
+        elif api_source.startswith("s3://"):
+            result = import_from_s3(api_source)
+        elif api_source.startswith("http"):
+            result = import_from_http(api_source)
+        else:
+            result = {"error": "Type de source API inconnu."}
+        return {"import_result": result}
+
+    # (autres méthodes métier à laisser inchangées si présentes dans ton fichier original)

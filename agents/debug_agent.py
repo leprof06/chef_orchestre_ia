@@ -1,64 +1,27 @@
-# agents/debug_agent.py
-
 from agents.base_agent import BaseAgent
-from config import CONFIG
-
-try:
-    import openai
-except ImportError:
-    openai = None
-try:
-    import requests
-except ImportError:
-    requests = None
+from agents.utils.syntax_checker import check_python_syntax
+from agents.utils.scan_vulnerabilities import scan_python_vuln
+from agents.utils.logger import get_logger
 
 class DebugAgent(BaseAgent):
     """
-    Agent de debug avancé :
-    - Reçoit un code ou un stacktrace
-    - Cherche la cause probable du bug (IA ou analyse locale)
-    - Propose des solutions concrètes (patch, ref, doc)
+    Détecte les erreurs syntaxiques et potentielles failles dans le projet Python.
+    Utilise check_python_syntax et scan_python_vuln des utils.
     """
     def __init__(self):
         super().__init__("DebugAgent")
-        self.has_openai = bool(CONFIG.get("use_openai") and openai)
-        self.has_hf = bool(CONFIG.get("use_huggingface") and requests)
-
-    def local_debug(self, code, error):
-        if "KeyError" in error:
-            return "Vérifie que ta clé existe dans le dictionnaire avant d'accéder à sa valeur."
-        elif "TypeError" in error:
-            return "Vérifie les types des variables passées à cette fonction."
-        return "Bug non reconnu en local. Essaie le mode IA !"
-
-    def debug_with_openai(self, code, error):
-        if not self.has_openai:
-            return None
-        prompt = f"Corrige ce code ou explique ce bug :\n\nCode :\n{code}\n\nErreur :\n{error}\n"
-        try:
-            response = openai.ChatCompletion.create(
-                model="gpt-4",
-                messages=[
-                    {"role": "system", "content": "Tu es un expert en debug Python et JS."},
-                    {"role": "user", "content": prompt}
-                ]
-            )
-            return response["choices"][0]["message"]["content"].strip()
-        except Exception as e:
-            return f"Erreur OpenAI : {str(e)}"
-
-    def debug_with_huggingface(self, code, error):
-        if not self.has_hf:
-            return None
-        return "Debug HuggingFace (à brancher sur un modèle code instruct)."
+        self.logger = get_logger("DebugAgent")
 
     def execute(self, task):
-        code = task.get("code", "")
-        error = task.get("error", "")
-        if self.has_openai:
-            res = self.debug_with_openai(code, error)
-        elif self.has_hf:
-            res = self.debug_with_huggingface(code, error)
-        else:
-            res = self.local_debug(code, error)
-        return {"debug_result": res}
+        project_path = task.get("project_path")
+        if not project_path:
+            return {"error": "Aucun chemin de projet fourni."}
+        syntax = check_python_syntax(project_path)
+        vuln = scan_python_vuln(project_path)
+        result = {
+            "syntax": syntax,
+            "vulnerabilities": vuln,
+        }
+        return result
+
+    # (autres méthodes métier à laisser inchangées si présentes dans ton fichier original)
