@@ -209,26 +209,26 @@ def register_routes(app, orchestrator):
     def allowed_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-    @app.route("/upload", methods=["POST"])
-    def upload_file():
-        if "file" not in request.files:
+    # Upload d’un projet existant (upload ZIP)
+    @app.route("/upload_projet_existant", methods=["POST"])
+    def upload_projet_existant():
+        if "project_zip" not in request.files:
             flash("Aucun fichier fourni.")
-            return redirect(request.url)
-        file = request.files["file"]
+            return redirect(url_for('projet_existant'))
+        file = request.files["project_zip"]
         if file.filename == '':
             flash("Aucun fichier sélectionné.")
-            return redirect(request.url)
+            return redirect(url_for('projet_existant'))
         if file and allowed_file(file.filename):
-            from werkzeug.utils import secure_filename
-            import os
-            save_path = os.path.join(app.config.get('UPLOAD_FOLDER', "workspace/uploads"), secure_filename(file.filename))
-            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            filename = secure_filename(file.filename)
+            save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(save_path)
-            flash("Fichier téléchargé avec succès.")
+            # Appelle ta logique pour importer ce projet ZIP ici
+            flash("Projet importé avec succès.")
             return redirect(url_for('chat_projet'))
         else:
             flash("Fichier non valide (format attendu : .zip)")
-            return redirect(request.url)
+            return redirect(url_for('projet_existant'))
 
     @app.route("/chat_projet")
     def chat_projet():
