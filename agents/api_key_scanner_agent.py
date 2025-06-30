@@ -1,6 +1,6 @@
 # agents/api_key_scanner_agent.py
 
-from .base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 import os
 import re
 from agents.utils.scan_secrets import scan_for_secrets

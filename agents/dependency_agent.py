@@ -1,6 +1,6 @@
 # agents/dependency_agent.py
 
-from .base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 from config import CONFIG
 import os
 import json

@@ -1,6 +1,6 @@
 # agents/ux_agent.py
 
-from .base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 from config import CONFIG
 from agents.utils.file_tools import read_file_safe, list_files_recursive
 from agents.utils.logger import get_logger

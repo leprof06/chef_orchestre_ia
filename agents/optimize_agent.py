@@ -2,15 +2,11 @@
 
 from .base_agent import BaseAgent
 from config import CONFIG
+from agents.utils.file_tools import read_file_safe, write_file_safe
+from agents.utils.logger import get_logger
 
-try:
-    import openai
-except ImportError:
-    openai = None
-try:
-    import requests
-except ImportError:
-    requests = None
+import openai
+import requests
 
 class OptimizeAgent(BaseAgent):
     """

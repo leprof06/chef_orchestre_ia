@@ -1,8 +1,10 @@
 # agents/external_api_miaison_agent.py
 
-from .base_agent import BaseAgent
+from agents.base_agent import BaseAgent
 import os
 import re
+from agents.utils.logger import get_logger
+import requests
 
 try:
     import openai
