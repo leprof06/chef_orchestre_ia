@@ -9,6 +9,7 @@ class Orchestrator:
         self.logs = []
         self.projects = {}
         self.code_state = ""
+        self.current_project = None
         # Instancie tous tes managers personnalisés
         self.analyse_manager = ChefAnalyseManager()
         self.code_manager = ChefCodeManager()
