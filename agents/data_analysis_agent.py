@@ -1,5 +1,5 @@
 from agents.base_agent import BaseAgent
-from agents.utils.syntax_checker import check_python_syntax
+from agents.utils.syntax_checker import analyze_folder_for_syntax
 from agents.utils.code_inspector import extract_code_structure
 from agents.utils.docstring_extractor import extract_docstrings
 from agents.utils.project_structure import analyse_structure_globale
@@ -24,8 +24,8 @@ class DataAnalysisAgent(BaseAgent):
         self.logger.info(f"Analyse projet {project_path}")
         # Analyse la structure globale
         structure = analyse_structure_globale(project_path)
-        # Vérifie la syntaxe de tous les fichiers .py
-        syntax_report = check_python_syntax(project_path)
+        # Vérifie la syntaxe de tous les fichiers 
+        syntax_report = analyze_folder_for_syntax(project_path)
         # Cherche les vulnérabilités
         vuln_report = scan_python_vuln(project_path)
         # (Option) Extrait les docstrings de tous les .py
