@@ -7,6 +7,7 @@ from managers.chef_ux_manager import ChefUXManager
 class Orchestrator:
     def __init__(self):
         self.logs = []
+        self.projects = {}
         self.code_state = ""
         # Instancie tous tes managers personnalisés
         self.analyse_manager = ChefAnalyseManager()
