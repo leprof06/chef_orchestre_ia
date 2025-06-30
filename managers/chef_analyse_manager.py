@@ -33,3 +33,8 @@ class ChefAnalyseManager(BaseManager):
     def handle_task(self, task):
         # Permet d'être appelé directement depuis orchestrator/analyser route
         return self.dispatch(task)
+
+    def handle(self, action_type, project_path=None):
+        if action_type == "analyse_code":
+            # Appelle ici le vrai agent d’analyse, pas une simulation
+            return self.agents["data_analysis"].execute({"project_path": project_path})

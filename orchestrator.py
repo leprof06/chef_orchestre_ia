@@ -3,6 +3,7 @@ from managers.chef_code_manager import ChefCodeManager
 from managers.chef_devops_manager import ChefDevOpsManager
 from managers.chef_rh_manager import ChefRHManager
 from managers.chef_ux_manager import ChefUXManager
+import openai
 
 class Orchestrator:
     def __init__(self):
@@ -77,3 +78,23 @@ class Orchestrator:
         self.current_project = project_name
         self.projects[project_name] = {}  # ou tout autre structure par défaut
         return True
+
+    def chat(self, message):
+        """
+        Envoie le message à OpenAI (ou autre IA) et renvoie la réponse réelle.
+        """
+        if not message.strip():
+            return "Merci d'écrire un message."
+        try:
+            # Utilise ici ton modèle préféré (GPT-3.5, GPT-4, etc.)
+            completion = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",  # ou autre modèle que tu as configuré
+                messages=[
+                    {"role": "system", "content": "Tu es un assistant développeur expert."},
+                    {"role": "user", "content": message}
+                ],
+                temperature=0.6
+            )
+            return completion.choices[0].message['content']
+        except Exception as e:
+            return f"Erreur OpenAI : {e}"
