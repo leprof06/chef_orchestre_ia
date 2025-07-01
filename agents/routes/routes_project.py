@@ -2,10 +2,13 @@
 from flask import render_template, redirect, url_for, session, flash, request, jsonify
 from werkzeug.utils import secure_filename
 import os
-
 from agents.utils.project_tools import (
-    get_existing_projects, save_project, load_project,
-    delete_project, export_project
+    create_project,
+    list_projects,
+    save_project_state,
+    load_project_state,
+    delete_project,
+    export_project,
 )
 
 def register_routes(app, orchestrator):
@@ -28,12 +31,12 @@ def register_routes(app, orchestrator):
 
     @app.route("/projet_existant", methods=["GET"])
     def projet_existant():
-        projects = get_existing_projects() if callable(get_existing_projects) else []
+        projects = list_projects() if callable(list_projects) else []
         return render_template("choose_project.html", projects=projects)
 
     @app.route("/load_project/<project_name>")
     def load_project_route(project_name):
-        success = load_project(project_name)
+        success = load_project_state(project_name)
         if success:
             session['current_project'] = project_name
             flash(f"Projet '{project_name}' chargé avec succès.")
@@ -45,7 +48,7 @@ def register_routes(app, orchestrator):
     @app.route("/save_project", methods=["POST"])
     def save_project_route():
         project_name = request.form.get("project_name")
-        success = save_project(project_name)
+        success = save_project_state(project_name)
         if success:
             flash(f"Projet '{project_name}' enregistré avec succès.")
             return redirect(url_for('choose_project'))
