@@ -1,32 +1,23 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Chef d'Orchestre IA - Accueil</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/nom_du_fichier.css') }}">
+  <meta charset="UTF-8">
+  <title>Chef d'Orchestre IA - Accueil</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h1>Chef d'Orchestre&nbsp;IA</h1>
-        <div class="subtitle">
-            Pilotez vos projets en langage naturel&nbsp;:<br>
-            créez un nouveau projet ou reprenez-en un existant.
-        </div>
-        <div class="actions">
-            <form action="{{ url_for('nouveau_projet') }}" method="get">
-               <button type="submit" class="btn-main">Nouveau projet</button>
-            </form>
-            <form action="{{ url_for('projet_existant') }}" method="get">
-                <button type="submit" class="btn-main">Projet existant</button>
-            </form>
-        </div>
-        <div class="footer">
-            <small>
-                Made by Yann & GPT-CodeAssistant. <br>
-                IA orchestrateur modulaire • 2025
-            </small>
-        </div>
+  <div class="container">
+    <h1>Chef d'Orchestre IA</h1>
+    <p>
+      <strong>Pilotez vos projets en langage naturel !</strong><br>
+      Créez un nouveau projet ou reprenez-en un existant.
+    </p>
+    <a href="{{ url_for('nouveau_projet') }}" class="btn">Nouveau projet</a>
+    <a href="{{ url_for('projet_existant') }}" class="btn">Projet existant</a>
+    <div style="margin-top: 32px; font-size: 0.92em; color: #888;">
+      Made by Yann &amp; GPT-CodeAssistant.<br>
+      Modular Orchestrator AI &copy; 2025
     </div>
+  </div>
 </body>
 </html>
