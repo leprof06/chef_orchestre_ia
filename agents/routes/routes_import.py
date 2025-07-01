@@ -2,7 +2,7 @@
 from flask import request, jsonify
 from agents.utils.project_tools import (
     import_from_zip_file,
-    import_local_folder,
+    import_from_local_folder,
     import_from_github,
     import_from_gdrive,
     import_from_dropbox,
@@ -23,9 +23,9 @@ def register_routes(app, orchestrator):
         return jsonify({"success": ok, "msg": msg})
 
     @app.route("/import/local", methods=["POST"])
-    def import_local():
+    def import_from_local():
         folder_path = request.form.get("folder_path")
-        ok, msg = import_local_folder(folder_path)
+        ok, msg = import_from_local_folder(folder_path)
         return jsonify({"success": ok, "msg": msg})
 
     @app.route("/import/github", methods=["POST"])
