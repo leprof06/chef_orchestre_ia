@@ -1,5 +1,6 @@
 # agents/routes/routes_misc.py
 from flask import render_template
+
 def register_routes(app, orchestrator):
     @app.route("/", methods=["GET"])
     def index():
