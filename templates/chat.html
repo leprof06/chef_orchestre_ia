@@ -3,33 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Chef d'Orchestre IA – Projet en cours</title>
-    <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #fafbff; margin: 0; }
-        .container { display: flex; flex-direction: row; width: 100vw; height: 100vh; }
-        .panel-left { flex: 1; padding: 30px; background: #f8fafc; }
-        .panel-right { flex: 2; padding: 30px; background: #f3f4f7; }
-        #logs-output { 
-            background: #222; color: #fafafa; padding: 18px; 
-            border-radius: 8px; margin-bottom: 24px; font-size: 1.02em; 
-            white-space: pre-wrap; min-height: 180px; font-family: 'Fira Mono', monospace;
-        }
-        #code-output { 
-            background: #191e2b; color: #ffe8a3; padding: 16px; 
-            border-radius: 8px; min-height: 220px; font-family: 'Fira Mono', monospace; 
-            font-size: 1.04em;
-        }
-        .chat-form { display: flex; gap: 12px; margin-top: 22px; }
-        .chat-form input[type="text"] {
-            flex: 1; padding: 10px 14px; border: 1px solid #e0e7ef; border-radius: 6px;
-            font-size: 1em; background: #fff;
-        }
-        .chat-form button {
-            padding: 10px 22px; background: #4f8cff; color: #fff;
-            border: none; border-radius: 6px; font-size: 1em;
-            cursor: pointer; transition: background 0.15s;
-        }
-        .chat-form button:hover { background: #2957c6; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nom_du_fichier.css') }}">
 </head>
 <body>
 <div class="container">

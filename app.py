@@ -24,4 +24,3 @@ register_misc_routes(app, orchestrator)
 
 if __name__ == "__main__":
     app.run(debug=True)
-

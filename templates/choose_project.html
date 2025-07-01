@@ -4,25 +4,7 @@
     <meta charset="UTF-8">
     <title>Choisir ou importer un projet - Chef d'Orchestre IA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        html, body { min-height: 100vh; margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(110deg, #f5f7fa 0%, #c3cfe2 100%);}
-        .container { max-width: 640px; margin: 7vh auto 0 auto; background: #fff; border-radius: 18px; box-shadow: 0 6px 32px rgba(70,100,200,0.12); padding: 3rem 2.5rem 2rem 2.5rem; text-align: center;}
-        h1 { font-size: 2rem; margin-bottom: 0.7em; color: #253e67; font-weight: 600;}
-        .subtitle { color: #6074a8; font-size: 1.05rem; margin-bottom: 2em;}
-        .import-sources { display: flex; flex-direction: column; gap: 1.1em; margin-top: 1.7em; }
-        form { background: #f7f8fd; padding: 0.9em 1em 1.2em 1em; border-radius: 10px; box-shadow: 0 1px 6px rgba(60,80,150,0.06); margin-bottom: 0.4em; text-align: left; }
-        label { display: block; font-weight: 500; color: #34476e; margin-bottom: 0.3em; }
-        input[type="file"], input[type="text"], input[type="password"] { width: 96%; padding: 0.45em; border: 1px solid #c9d3ea; border-radius: 8px; margin-bottom: 0.4em; }
-        .btn-main { font-size: 1.09rem; font-weight: 500; border: none; outline: none; border-radius: 12px; padding: 0.68em 0; width: 100%; cursor: pointer; background: linear-gradient(90deg, #355C7D 0%, #6C5B7B 100%); color: #fff; transition: background 0.23s; box-shadow: 0 2px 12px rgba(60,80,150,0.06);}
-        .btn-main:hover:enabled { background: linear-gradient(90deg, #6C5B7B 0%, #355C7D 100%);}
-        .btn-main[disabled] { background: #bfc6da; cursor: not-allowed; opacity: 0.65; }
-        .project-list { margin: 2.5em 0 1.7em 0; }
-        .footer { margin-top: 2.3em; color: #889; font-size: 0.95em;}
-        .sep {margin: 1.7em auto; border-bottom: 2px dashed #dae2f1; width: 80%;}
-        .projets-titre {color: #26345a; font-size: 1.08rem; margin-bottom: 0.5em; font-weight: bold;}
-        .project-btn { background: linear-gradient(90deg, #1cb5e0 0%, #000851 100%); color: #fff; border-radius: 9px; padding: 0.6em 1.2em; font-size: 1.03rem; margin: 0.22em 0.2em; border:none; cursor:pointer;}
-        .project-btn:hover { background: linear-gradient(90deg, #000851 0%, #1cb5e0 100%);}
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nom_du_fichier.css') }}">
 </head>
 <body>
     <div class="container">

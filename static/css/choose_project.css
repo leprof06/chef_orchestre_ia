@@ -1,0 +1,42 @@
+body {
+    background: #eef2fa;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+h2 {
+    color: #253e67;
+    text-align: center;
+    margin-top: 40px;
+}
+.project-list {
+    max-width: 400px;
+    margin: 40px auto 0 auto;
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 24px rgba(70,100,200,0.10);
+    padding: 2rem;
+}
+.project-item {
+    margin-bottom: 1em;
+    padding: 1em 1.2em;
+    border-bottom: 1px solid #e3e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.project-item:last-child {
+    border-bottom: none;
+}
+.btn-select {
+    background: #355C7D;
+    color: #fff;
+    border: none;
+    padding: 0.5em 1.2em;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.19s;
+}
+.btn-select:hover {
+    background: #6C5B7B;
+}
