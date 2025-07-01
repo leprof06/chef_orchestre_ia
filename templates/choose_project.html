@@ -1,129 +1,126 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Choisir ou importer un projet - Chef d'Orchestre IA</title>
+    <title>Select or Import Project – Orchestrator AI</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/choose_project.css') }}">
 </head>
 <body>
     <div class="container">
-        <h1>Ouvrir un projet existant <span style="font-size:1.1em;">📂</span></h1>
-        <div class="subtitle">Sélectionne une source pour importer ou ouvrir ton projet.</div>
+        <h1>Open or Import a Project <span style="font-size:1.1em;">📂</span></h1>
+        <div class="subtitle">Select a source to import or open your project.</div>
 
         <div class="import-sources">
-<!-- === Import d’un dossier local via explorateur natif (100% web compatible) === -->
-<form method="POST" action="{{ url_for('import_local_folder_route') }}" enctype="multipart/form-data" style="margin-top:1em;">
-    <label for="folderInput"><strong>Importer un dossier local :</strong></label><br>
-    <input id="folderInput" name="folder" type="file" webkitdirectory directory multiple required>
-    <button type="submit" class="btn-main" style="margin-top:0.5em;">Importer ce dossier</button>
-    <span style="font-size:0.93em;color:#678;">(Tous les fichiers et sous-dossiers seront importés)</span>
-</form>
 
-    <!-- === Import d’un dossier local (NOUVEAU) === -->
-    
-
+            <!-- Local folder import via browser file explorer -->
+            <form method="POST" action="{{ url_for('import_project_from_local_folder') }}" enctype="multipart/form-data" style="margin-top:1em;">
+                <label for="folderInput"><strong>Import local folder:</strong></label><br>
+                <input id="folderInput" name="folder" type="file" webkitdirectory directory multiple required>
+                <button type="submit" class="btn-main" style="margin-top:0.5em;">Import Folder</button>
+                <span style="font-size:0.93em;color:#678;">(All files and subfolders will be imported)</span>
+            </form>
 
             <!-- Import ZIP -->
             <form action="{{ url_for('upload_projet_existant') }}" method="post" enctype="multipart/form-data">
-                <label>Télécharger un projet ZIP :</label>
+                <label>Import project ZIP:</label>
                 <input type="file" name="project_zip" accept=".zip" required>
-                <button type="submit" class="btn-main">Importer ZIP</button>
+                <button type="submit" class="btn-main">Import ZIP</button>
             </form>
 
-            <!-- Import dossier local -->
-            <form action="{{ url_for('import_local') }}" method="post">
-                <label>Importer un dossier local :</label>
-                <input type="text" name="folder_path" placeholder="Chemin complet du dossier (ex: C:/Users/xxx/monprojet)" required>
-                <button type="submit" class="btn-main">Importer Local</button>
+            <!-- Import local folder by path (legacy, manual entry) -->
+            <form action="{{ url_for('import_project_from_local_folder') }}" method="post">
+                <label>Import local folder (manual path):</label>
+                <input type="text" name="folder_path" placeholder="Full folder path (e.g. C:/Users/xxx/myproject)" required>
+                <button type="submit" class="btn-main">Import Local (Path)</button>
             </form>
 
             <!-- Import GitHub -->
-            <form action="{{ url_for('import_github') }}" method="post">
-                <label>Importer depuis GitHub :</label>
-                <input type="text" name="github_url" placeholder="URL du repo GitHub" required>
-                <input type="text" name="token" placeholder="Clé API (optionnel)">
-                <button type="submit" class="btn-main" {% if github_token is not defined or not github_token %}disabled{% endif %}>Importer GitHub</button>
+            <form action="{{ url_for('import_project_from_github') }}" method="post">
+                <label>Import from GitHub:</label>
+                <input type="text" name="github_url" placeholder="GitHub repo URL" required>
+                <input type="text" name="token" placeholder="API Token (optional)">
+                <button type="submit" class="btn-main">Import GitHub</button>
             </form>
 
             <!-- Import Google Drive -->
-            <form action="{{ url_for('import_gdrive') }}" method="post">
-                <label>Importer depuis Google Drive :</label>
-                <input type="text" name="gdrive_id" placeholder="ID fichier/dossier Drive" required>
-                <input type="text" name="token" placeholder="Clé API Google Drive">
-                <button type="submit" class="btn-main" {% if gdrive_token is not defined or not gdrive_token %}disabled{% endif %}>Importer Google Drive</button>
+            <form action="{{ url_for('import_project_from_gdrive') }}" method="post">
+                <label>Import from Google Drive:</label>
+                <input type="text" name="gdrive_id" placeholder="Google Drive file/folder ID" required>
+                <input type="text" name="token" placeholder="Google Drive API token">
+                <button type="submit" class="btn-main">Import Google Drive</button>
             </form>
 
             <!-- Import Dropbox -->
-            <form action="{{ url_for('import_dropbox') }}" method="post">
-                <label>Importer depuis Dropbox :</label>
-                <input type="text" name="dropbox_link" placeholder="Lien partage Dropbox" required>
-                <input type="text" name="token" placeholder="Clé API Dropbox">
-                <button type="submit" class="btn-main" {% if dropbox_token is not defined or not dropbox_token %}disabled{% endif %}>Importer Dropbox</button>
+            <form action="{{ url_for('import_project_from_dropbox') }}" method="post">
+                <label>Import from Dropbox:</label>
+                <input type="text" name="dropbox_link" placeholder="Dropbox share link" required>
+                <input type="text" name="token" placeholder="Dropbox API token">
+                <button type="submit" class="btn-main">Import Dropbox</button>
             </form>
 
             <!-- Import iCloud -->
-            <form action="{{ url_for('import_icloud') }}" method="post">
-                <label>Importer depuis iCloud :</label>
-                <input type="text" name="icloud_url" placeholder="Lien iCloud ou identifiant" required>
-                <input type="text" name="token" placeholder="Clé API iCloud (si besoin)">
-                <button type="submit" class="btn-main" disabled title="Non supporté par défaut">Importer iCloud</button>
+            <form action="{{ url_for('import_project_from_icloud') }}" method="post">
+                <label>Import from iCloud:</label>
+                <input type="text" name="icloud_url" placeholder="iCloud link or ID" required>
+                <input type="text" name="token" placeholder="iCloud API token (if needed)">
+                <button type="submit" class="btn-main" disabled title="Not supported">Import iCloud</button>
             </form>
 
             <!-- Import AWS S3 -->
-            <form action="{{ url_for('import_s3') }}" method="post">
-                <label>Importer depuis AWS S3 :</label>
-                <input type="text" name="s3_url" placeholder="URL S3" required>
+            <form action="{{ url_for('import_project_from_s3') }}" method="post">
+                <label>Import from AWS S3:</label>
+                <input type="text" name="s3_url" placeholder="S3 URL" required>
                 <input type="text" name="aws_access_key" placeholder="AWS Access Key">
                 <input type="text" name="aws_secret_key" placeholder="AWS Secret Key">
-                <button type="submit" class="btn-main" {% if s3_key is not defined or not s3_key or s3_secret is not defined or not s3_secret %}disabled{% endif %}>Importer S3</button>
+                <button type="submit" class="btn-main">Import S3</button>
             </form>
 
-            <!-- Import HTTP/URL direct -->
-            <form action="{{ url_for('import_http') }}" method="post">
-                <label>Importer via une URL HTTP/HTTPS :</label>
-                <input type="text" name="http_url" placeholder="https://url/du/fichier.zip" required>
-                <button type="submit" class="btn-main">Importer via URL</button>
+            <!-- Import HTTP/URL -->
+            <form action="{{ url_for('import_project_from_http') }}" method="post">
+                <label>Import from HTTP/HTTPS URL:</label>
+                <input type="text" name="http_url" placeholder="https://url/to/file.zip" required>
+                <button type="submit" class="btn-main">Import from URL</button>
             </form>
 
             <!-- Import FTP -->
-            <form action="{{ url_for('import_ftp') }}" method="post">
-                <label>Importer depuis FTP :</label>
+            <form action="{{ url_for('import_project_from_ftp') }}" method="post">
+                <label>Import from FTP:</label>
                 <input type="text" name="ftp_url" placeholder="ftp://..." required>
-                <input type="text" name="ftp_user" placeholder="Utilisateur (optionnel)">
-                <input type="password" name="ftp_pass" placeholder="Mot de passe (optionnel)">
-                <button type="submit" class="btn-main">Importer FTP</button>
+                <input type="text" name="ftp_user" placeholder="Username (optional)">
+                <input type="password" name="ftp_pass" placeholder="Password (optional)">
+                <button type="submit" class="btn-main">Import FTP</button>
             </form>
 
             <!-- Import SVN -->
-            <form action="{{ url_for('import_svn') }}" method="post">
-                <label>Importer depuis SVN :</label>
-                <input type="text" name="svn_url" placeholder="URL du dépôt SVN" required>
-                <button type="submit" class="btn-main">Importer SVN</button>
+            <form action="{{ url_for('import_project_from_svn') }}" method="post">
+                <label>Import from SVN:</label>
+                <input type="text" name="svn_url" placeholder="SVN repository URL" required>
+                <button type="submit" class="btn-main">Import SVN</button>
             </form>
 
             <!-- Import Bitbucket -->
-            <form action="{{ url_for('import_bitbucket') }}" method="post">
-                <label>Importer depuis Bitbucket :</label>
-                <input type="text" name="bitbucket_url" placeholder="URL du repo Bitbucket" required>
-                <input type="text" name="token" placeholder="Clé API Bitbucket (optionnel)">
-                <button type="submit" class="btn-main" {% if bitbucket_token is not defined or not bitbucket_token %}disabled{% endif %}>Importer Bitbucket</button>
+            <form action="{{ url_for('import_project_from_bitbucket') }}" method="post">
+                <label>Import from Bitbucket:</label>
+                <input type="text" name="bitbucket_url" placeholder="Bitbucket repo URL" required>
+                <input type="text" name="token" placeholder="Bitbucket API token (optional)">
+                <button type="submit" class="btn-main">Import Bitbucket</button>
             </form>
 
             <!-- Import GitLab -->
-            <form action="{{ url_for('import_gitlab') }}" method="post">
-                <label>Importer depuis GitLab :</label>
-                <input type="text" name="gitlab_url" placeholder="URL du repo GitLab" required>
-                <input type="text" name="token" placeholder="Clé API GitLab (optionnel)">
-                <button type="submit" class="btn-main" {% if gitlab_token is not defined or not gitlab_token %}disabled{% endif %}>Importer GitLab</button>
+            <form action="{{ url_for('import_project_from_gitlab') }}" method="post">
+                <label>Import from GitLab:</label>
+                <input type="text" name="gitlab_url" placeholder="GitLab repo URL" required>
+                <input type="text" name="token" placeholder="GitLab API token (optional)">
+                <button type="submit" class="btn-main">Import GitLab</button>
             </form>
         </div>
 
         <div class="sep"></div>
 
-        <!-- Liste des projets déjà importés/local -->
+        <!-- List of already imported/local projects -->
         <div class="project-list">
-            <div class="projets-titre">Mes projets déjà présents :</div>
+            <div class="projets-titre">Your existing projects:</div>
             {% if projects %}
                 {% for project in projects %}
                     <form action="{{ url_for('load_project', project_name=project) }}" method="get" style="display:inline;">
@@ -131,23 +128,13 @@
                     </form>
                 {% endfor %}
             {% else %}
-                <div>Aucun projet pour l’instant.</div>
+                <div>No project found.</div>
             {% endif %}
         </div>
         <div class="footer">
             <small>
                 Made by Yann & GPT-CodeAssistant.<br>
-                IA orchestrateur modulaire • 2025
-            </small>
-        </div>
-    </div>
-</body>
-</html>
-        </div>
-        <div class="footer">
-            <small>
-                Made by Yann & GPT-CodeAssistant.<br>
-                IA orchestrateur modulaire • 2025
+                Modular Orchestrator AI • 2025
             </small>
         </div>
     </div>
