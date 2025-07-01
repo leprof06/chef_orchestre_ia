@@ -1,6 +1,9 @@
 from flask import Flask
 from orchestrator import Orchestrator
-from routes import register_routes
+from agents.routes.routes_project import register_routes as register_project_routes
+from agents.routes.routes_import import register_routes as register_import_routes
+from agents.routes.routes_chat import register_routes as register_chat_routes
+from agents.routes.routes_misc import register_routes as register_misc_routes
 import os
 
 app = Flask(__name__)
@@ -13,8 +16,10 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Plug toutes les routes à l'app
-register_routes(app, orchestrator)
-
+register_project_routes(app, orchestrator)
+register_import_routes(app, orchestrator)
+register_chat_routes(app, orchestrator)
+register_misc_routes(app, orchestrator)
 
 
 if __name__ == "__main__":
