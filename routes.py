@@ -1,24 +1,35 @@
 from flask import render_template, redirect, url_for, session, flash, request, jsonify
-import os, tempfile
-import zipfile
+import os
 from werkzeug.utils import secure_filename
-from agents.utils.ai_api_connector import AIAPIConnector
-from agents.utils.import_connectors import (
-    import_zip_file, import_local_folder, import_from_github,
-    import_from_gdrive, import_from_dropbox, import_from_icloud,
-    import_from_s3, import_from_http, import_from_ftp,
-    import_from_svn, import_from_bitbucket, import_from_gitlab
+
+# ——— IMPORT UTILITAIRES (pour gestion projets, upload, import, etc) ———
+from agents.utils.projet_tools import (
+    get_existing_projects,
+    save_project,
+    load_project,
+    delete_project,
+    export_project,
+    import_zip_file,
+    import_local_folder,
+    import_from_github,
+    import_from_gdrive,
+    import_from_dropbox,
+    import_from_icloud,
+    import_from_s3,
+    import_from_http,
+    import_from_ftp,
+    import_from_svn,
+    import_from_bitbucket,
+    import_from_gitlab,
 )
+# ———————————————————————————————————————————————————————————————
 
 def register_routes(app, orchestrator):
-    ai_connector = AIAPIConnector()
-    
-    # --- ACCUEIL ---
+
     @app.route("/", methods=["GET"])
     def index():
         return render_template("index.html")
 
-    # --- NOUVEAU PROJET (crée et va direct dans le chat) ---
     @app.route("/nouveau_projet", methods=["GET", "POST"])
     def nouveau_projet():
         if request.method == "POST":
@@ -35,13 +46,13 @@ def register_routes(app, orchestrator):
             flash(f"Erreur lors de la création du projet.")
             return redirect(url_for('index'))
 
-    # --- PROJET EXISTANT (liste des projets et choix) ---
     @app.route("/projet_existant", methods=["GET"])
     def projet_existant():
-        projects = orchestrator.get_existing_projects() if hasattr(orchestrator, "get_existing_projects") else []
+        # Utilise utilitaire :
+        projects = get_existing_projects() if callable(get_existing_projects) else []
         return render_template("choose_project.html", projects=projects)
 
-    # --- IMPORTS MULTI-SOURCE ---
+    # --- IMPORTS MULTI-SOURCE (utilitaires gérés) ---
     @app.route("/import/zip", methods=["POST"])
     def import_zip():
         zip_path = request.form.get("zip_path")
@@ -53,34 +64,6 @@ def register_routes(app, orchestrator):
         folder_path = request.form.get("folder_path")
         ok, msg = import_local_folder(folder_path)
         return jsonify({"success": ok, "msg": msg})
-
-    # === Import d’un dossier local (WEB, multi-fichiers) ===
-    @app.route("/import/local_folder", methods=["POST"])
-    def import_local_folder_route():
-        files = request.files.getlist('folder')
-        if not files or len(files) == 0:
-            flash("Aucun fichier reçu.", "danger")
-            return redirect(url_for('projet_existant'))
-        with tempfile.TemporaryDirectory() as temp_dir:
-            for file in files:
-                file_path = os.path.join(temp_dir, file.filename)
-                os.makedirs(os.path.dirname(file_path), exist_ok=True)
-                file.save(file_path)
-            # Déduire un nom de projet (exemple simple : nom du dossier racine du premier fichier)
-            first_file = files[0].filename if files else "Projet_importé"
-            project_name = first_file.split('/')[0] if '/' in first_file else "Projet_importé"
-            # Créer le projet dans l’orchestrator
-            success = orchestrator.create_new_project(project_name)
-            if success:
-                session['current_project'] = project_name
-                flash(f"Projet '{project_name}' importé et prêt à l’emploi !", "success")
-                # Ici tu pourrais aussi déplacer tous les fichiers dans le workspace du projet
-            else:
-                flash("Erreur lors de la création du projet à partir du dossier importé.", "danger")
-                return redirect(url_for('projet_existant'))
-
-        return redirect(url_for('chat_projet'))
-
 
     @app.route("/import/github", methods=["POST"])
     def import_github():
@@ -156,35 +139,18 @@ def register_routes(app, orchestrator):
     @app.route("/chat", methods=["GET", "POST"])
     def chat():
         if request.method == "POST":
-            message = request.form.get("message", "").strip()
-            if not message:
-                return "Veuillez écrire un message.", 400
-            # Appel direct à l’API réelle via le connecteur IA
-            try:
-                result = ai_connector.chat(message)
-            except Exception as e:
-                return f"Erreur lors de la requête IA : {e}", 500
-            return str(result), 200  # Réponse texte brute pour le frontend
+            message = request.form.get("message")
+            result = orchestrator.chat(message) if hasattr(orchestrator, "chat") else "Aucune IA disponible : fonction non implémentée"
+            return jsonify({"reply": result})
         return render_template("chat.html")
 
     @app.route("/analyser", methods=["POST"])
     def analyser():
         project_path = request.form.get("project_path")
-        if not project_path or not os.path.isdir(project_path):
-            return jsonify({"success": False, "msg": "Chemin projet invalide ou manquant."})
-
-        try:
-            # Appelle le vrai analyse_manager (qui ne doit RIEN simuler !)
-            result = orchestrator.analyse_manager.handle("analyse_code", project_path)
-        except Exception as e:
-            return jsonify({"success": False, "msg": f"Erreur analyse : {e}"})
-
-        if isinstance(result, dict):
-            # Retourne chaque info d’analyse clairement
-            msg = "\n".join(f"{k}: {v}" for k, v in result.items())
-            return jsonify({"success": True, "msg": msg})
-        else:
-            return jsonify({"success": True, "msg": str(result)})
+        # Appelle le manager réel, pas de simulation
+        result = orchestrator.analyse_manager.handle("analyse_code", project_path) \
+            if hasattr(orchestrator, "analyse_manager") else "Analyse non implémentée"
+        return jsonify({"result": result})
 
     # --- LOGS, CODE, RESET, GESTION PROJETS ---
     @app.route("/logs")
@@ -205,15 +171,15 @@ def register_routes(app, orchestrator):
         flash("Projet réinitialisé avec succès.")
         return redirect(url_for('index'))
 
-    # --- CHOIX, CHARGEMENT, SAUVEGARDE, SUPPRESSION, EXPORT PROJET ---
     @app.route("/choose_project")
     def choose_project():
-        projects = orchestrator.get_existing_projects() if hasattr(orchestrator, "get_existing_projects") else []
+        projects = get_existing_projects() if callable(get_existing_projects) else []
         return render_template("choose_project.html", projects=projects)
 
     @app.route("/load_project/<project_name>")
-    def load_project(project_name):
-        success = orchestrator.load_project(project_name) if hasattr(orchestrator, "load_project") else False
+    def load_project_route(project_name):
+        # Utilise le utilitaire (à adapter si tu veux garder la méthode d’orchestrator)
+        success = load_project(project_name)
         if success:
             session['current_project'] = project_name
             flash(f"Projet '{project_name}' chargé avec succès.")
@@ -223,9 +189,9 @@ def register_routes(app, orchestrator):
             return redirect(url_for('choose_project'))
 
     @app.route("/save_project", methods=["POST"])
-    def save_project():
+    def save_project_route():
         project_name = request.form.get("project_name")
-        success = orchestrator.save_project(project_name) if hasattr(orchestrator, "save_project") else False
+        success = save_project(project_name)
         if success:
             flash(f"Projet '{project_name}' enregistré avec succès.")
             return redirect(url_for('choose_project'))
@@ -234,8 +200,8 @@ def register_routes(app, orchestrator):
             return redirect(url_for('chat'))
 
     @app.route("/delete_project/<project_name>")
-    def delete_project(project_name):
-        success = orchestrator.delete_project(project_name) if hasattr(orchestrator, "delete_project") else False
+    def delete_project_route(project_name):
+        success = delete_project(project_name)
         if success:
             flash(f"Projet '{project_name}' supprimé avec succès.")
             return redirect(url_for('choose_project'))
@@ -244,8 +210,8 @@ def register_routes(app, orchestrator):
             return redirect(url_for('choose_project'))
 
     @app.route("/export_project/<project_name>")
-    def export_project(project_name):
-        success, msg = orchestrator.export_project(project_name) if hasattr(orchestrator, "export_project") else (False, "Non implémenté")
+    def export_project_route(project_name):
+        success, msg = export_project(project_name)
         if success:
             flash(f"Projet '{project_name}' exporté avec succès.")
             return jsonify({"success": True, "msg": msg})
@@ -253,12 +219,10 @@ def register_routes(app, orchestrator):
             flash(f"Échec de l'exportation du projet '{project_name}'.")
             return jsonify({"success": False, "msg": msg})
 
-    # --- UPLOAD DIRECT ZIP (si besoin) ---
     ALLOWED_EXTENSIONS = {"zip"}
     def allowed_file(filename):
         return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-    # Upload d’un projet existant (upload ZIP)
     @app.route("/upload_projet_existant", methods=["POST"])
     def upload_projet_existant():
         if "project_zip" not in request.files:
@@ -270,9 +234,9 @@ def register_routes(app, orchestrator):
             return redirect(url_for('projet_existant'))
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            # Tu peux utiliser le bon chemin d'upload ici (UPLOAD_FOLDER doit être configuré dans app.config !)
+            save_path = os.path.join(app.config.get('UPLOAD_FOLDER', 'uploads'), filename)
             file.save(save_path)
-            # Appelle ta logique pour importer ce projet ZIP ici
             flash("Projet importé avec succès.")
             return redirect(url_for('chat_projet'))
         else:
@@ -285,3 +249,4 @@ def register_routes(app, orchestrator):
         logs = orchestrator.get_logs() if hasattr(orchestrator, "get_logs") else []
         code = orchestrator.get_code_state() if hasattr(orchestrator, "get_code_state") else ""
         return render_template("chat.html", show_analyse_btn=show_analyse, logs=logs, code=code)
+
