@@ -1,7 +1,7 @@
 # agents/routes/routes_import.py
 from flask import request, jsonify
 from agents.utils.project_tools import (
-    import_zip_file,
+    import_from_zip_file,
     import_local_folder,
     import_from_github,
     import_from_gdrive,
@@ -17,9 +17,9 @@ from agents.utils.project_tools import (
 
 def register_routes(app, orchestrator):
     @app.route("/import/zip", methods=["POST"])
-    def import_zip():
+    def import_from_zip():
         zip_path = request.form.get("zip_path")
-        ok, msg = import_zip_file(zip_path)
+        ok, msg = import_from_zip_file(zip_path)
         return jsonify({"success": ok, "msg": msg})
 
     @app.route("/import/local", methods=["POST"])
