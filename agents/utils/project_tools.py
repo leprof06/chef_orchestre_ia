@@ -2,6 +2,7 @@ import os
 import shutil
 import zipfile
 import requests
+import json
 
 # Dépendances externes nécessaires :
 # pip install gitpython pydrive2 dropbox boto3 python-gitlab pysvn ftplib
@@ -216,3 +217,22 @@ def import_from_gitlab(gitlab_url, token=None):
         return True, f"Projet GitLab cloné dans {dest}"
     except Exception as e:
         return False, f"Erreur import GitLab : {e}"
+
+def create_project(project_name):
+    """
+    Crée un nouveau projet dans le dossier projects/ avec un main.py et un state.json vides.
+    """
+    path = os.path.join(PROJECTS_DIR, project_name)
+    if os.path.exists(path):
+        return False, f"Le projet '{project_name}' existe déjà."
+    try:
+        os.makedirs(path, exist_ok=True)
+        # Crée main.py
+        with open(os.path.join(path, "main.py"), "w", encoding="utf-8") as f:
+            f.write("# Nouveau projet Python\n")
+        # Crée state.json
+        with open(os.path.join(path, "state.json"), "w", encoding="utf-8") as f:
+            json.dump({}, f)
+        return True, f"Projet '{project_name}' créé avec succès."
+    except Exception as e:
+        return False, f"Erreur lors de la création du projet : {e}"
