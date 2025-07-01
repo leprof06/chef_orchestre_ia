@@ -69,3 +69,15 @@ def import_project_from_zip(zip_path, project_name=None):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         zip_ref.extractall(target)
     return project_name
+
+def import_zip_file(zip_path):
+    if not os.path.exists(zip_path):
+        return False, "Fichier ZIP introuvable."
+    try:
+        extract_dir = os.path.splitext(zip_path)[0]
+        os.makedirs(extract_dir, exist_ok=True)
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(extract_dir)
+        return True, f"Projet importé dans {extract_dir}"
+    except Exception as e:
+        return False, f"Erreur lors de l'import ZIP : {e}"
