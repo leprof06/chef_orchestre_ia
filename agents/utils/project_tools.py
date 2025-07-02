@@ -13,6 +13,9 @@ import boto3
 from ftplib import FTP
 
 PROJECTS_DIR = "projects"
+IGNORED_FOLDERS = ['node_modules', '.venv', '.git', '__pycache__']
+IGNORED_EXTENSIONS = ['.log', '.pyc', '.pyo']
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 Mo
 
 # --- Core project management ---
 
@@ -106,15 +109,38 @@ def import_project_from_zip(zip_path, project_name=None):
     except Exception as e:
         return False, f"Error importing ZIP: {e}"
 
+def should_ignore(path):
+    # Ignore dossiers dans le chemin
+    parts = set(os.path.normpath(path).split(os.sep))
+    if any(ignored in parts for ignored in IGNORED_FOLDERS):
+        return True
+    # Ignore extensions
+    if any(path.lower().endswith(ext) for ext in IGNORED_EXTENSIONS):
+        return True
+    # Ignore gros fichiers
+    try:
+        if os.path.isfile(path) and os.path.getsize(path) > MAX_FILE_SIZE:
+            return True
+    except Exception:
+        pass
+    return False
+
 def import_project_from_local_folder(folder_path, project_name=None):
-    """
-    Import a project from a local folder (copy files).
-    """
-    if not os.path.exists(folder_path):
-        return False, "Local folder not found."
     dest = os.path.join(PROJECTS_DIR, project_name or os.path.basename(folder_path.rstrip('/\\')))
     try:
-        shutil.copytree(folder_path, dest)
+        os.makedirs(dest, exist_ok=True)
+        # Copie tout, en ignorant les dossiers/fichiers choisis
+        for root, dirs, files in os.walk(folder_path):
+            # Filtrer les dossiers à ne pas parcourir
+            dirs[:] = [d for d in dirs if d not in IGNORED_FOLDERS]
+            for f in files:
+                src_path = os.path.join(root, f)
+                rel_path = os.path.relpath(src_path, folder_path)
+                dest_path = os.path.join(dest, rel_path)
+                if should_ignore(src_path):
+                    continue
+                os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+                shutil.copy2(src_path, dest_path)
         return True, f"Project imported from {folder_path}"
     except Exception as e:
         return False, f"Error importing local folder: {e}"
