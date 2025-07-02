@@ -88,13 +88,18 @@ def export_project(project_name, export_path=None):
 
 def import_project_from_zip(zip_path, project_name=None):
     """
-    Import a project from a ZIP file.
+    Import a project from a ZIP file. Crée un dossier projet dans projects/ et l'extrait dedans.
+    Refuse d'importer si le dossier projet existe déjà.
     """
     if not os.path.exists(zip_path):
         return False, "ZIP file not found."
+    # Propose un nom de dossier basé sur le nom du zip s'il n'est pas donné
+    base_name = project_name or os.path.splitext(os.path.basename(zip_path))[0]
+    extract_dir = os.path.join(PROJECTS_DIR, base_name)
+    if os.path.exists(extract_dir):
+        return False, f"Project '{base_name}' already exists. Please choose another name or delete the existing one."
     try:
-        extract_dir = os.path.join(PROJECTS_DIR, project_name or os.path.splitext(os.path.basename(zip_path))[0])
-        os.makedirs(extract_dir, exist_ok=True)
+        os.makedirs(extract_dir)
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(extract_dir)
         return True, f"Project imported into {extract_dir}"
