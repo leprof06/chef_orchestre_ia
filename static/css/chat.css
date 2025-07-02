@@ -264,13 +264,14 @@ body {
     padding: 0.7rem;
   }
 }
+/* ========== Menu langue à gauche, DRY drapeaux, responsive ========== */
 #lang-switcher {
   position: absolute;
   top: 24px;
-  right: 32px;
+  left: 32px;
+  right: auto;
   z-index: 1000;
 }
-
 .lang-btn {
   background: #fff;
   color: #253262;
@@ -286,17 +287,15 @@ body {
   gap: 7px;
   transition: border 0.2s;
 }
-
 .lang-btn:hover,
 .lang-btn:focus {
   border-color: #4e5be7;
   outline: none;
 }
-
 .lang-list {
   display: none;
   position: absolute;
-  right: 0;
+  left: 0;
   background: #fff;
   margin-top: 6px;
   border-radius: 12px;
@@ -320,4 +319,11 @@ body {
 }
 #lang-switcher.open .lang-list {
   display: block;
+}
+/* Responsive : menu langue colle à gauche en petit écran */
+@media (max-width: 800px) {
+  #lang-switcher {
+    left: 14px !important;
+    top: 14px;
+  }
 }

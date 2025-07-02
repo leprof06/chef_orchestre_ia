@@ -2,21 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title data-i18n="header_title">Chef d'Orchestre IA - Home</title>
+    <title>Chef d'Orchestre IA - Home</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
     {% include "lang_menu.html" %}
     <div class="container">
         <div class="card">
-            <h1 data-i18n="header_title">Chef d'Orchestre <span class="brand">IA</span></h1>
-            <p class="subtitle" data-i18n="welcome">
+            <h1>Chef d'Orchestre <span class="brand">IA</span></h1>
+            <p class="subtitle">
                 <strong>Orchestrate your projects with natural language!</strong><br>
                 Start a new project or resume an existing one.
             </p>
             <div class="actions">
-                <a class="button" href="{{ url_for('nouveau_projet') }}" data-i18n="new_project">New Project</a>
-                <a class="button alt" href="{{ url_for('projet_existant') }}" data-i18n="existing_project">Existing Project</a>
+                <a class="button" href="{{ url_for('nouveau_projet') }}">New Project</a>
+                <a class="button alt" href="{{ url_for('projet_existant') }}">Existing Project</a>
             </div>
             <footer>
                 <p class="author">Made by Yann & GPT-CodeAssistant.<br>

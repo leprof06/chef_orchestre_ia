@@ -5,6 +5,8 @@
     <title data-i18n="choose_project">Choose your project</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/choose_project.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
     {% include "lang_menu.html" %}
@@ -29,7 +31,7 @@
                 <button type="submit" class="btn-main" data-i18n="import_zip">Import ZIP</button>
             </form>
 
-            <!-- Import local folder by path (legacy, manual entry) -->
+            <!-- Import local folder by path -->
             <form action="{{ url_for('import_project_from_local_folder') }}" method="post">
                 <label data-i18n="import_local_folder_path_label">Import local folder (manual path):</label>
                 <input type="text" name="folder_path" placeholder="Full folder path (e.g. C:/Users/xxx/myproject)" required data-i18n-ph="folder_path_placeholder">
@@ -48,7 +50,7 @@
             <form action="{{ url_for('import_project_from_gdrive') }}" method="post">
                 <label data-i18n="import_gdrive_label">Import from Google Drive:</label>
                 <input type="text" name="gdrive_id" placeholder="Google Drive file/folder ID" required data-i18n-ph="gdrive_id_placeholder">
-                <input type="text" name="token" placeholder="Google Drive API token" data-i18n-ph="token_placeholder">
+                <input type="text" name="token" placeholder="Google Drive API token" data-i18n-ph="gdrive_token_placeholder">
                 <button type="submit" class="btn-main" data-i18n="import_gdrive">Import Google Drive</button>
             </form>
 
@@ -56,7 +58,7 @@
             <form action="{{ url_for('import_project_from_dropbox') }}" method="post">
                 <label data-i18n="import_dropbox_label">Import from Dropbox:</label>
                 <input type="text" name="dropbox_link" placeholder="Dropbox share link" required data-i18n-ph="dropbox_link_placeholder">
-                <input type="text" name="token" placeholder="Dropbox API token" data-i18n-ph="token_placeholder">
+                <input type="text" name="token" placeholder="Dropbox API token" data-i18n-ph="dropbox_token_placeholder">
                 <button type="submit" class="btn-main" data-i18n="import_dropbox">Import Dropbox</button>
             </form>
 
@@ -64,7 +66,7 @@
             <form action="{{ url_for('import_project_from_icloud') }}" method="post">
                 <label data-i18n="import_icloud_label">Import from iCloud:</label>
                 <input type="text" name="icloud_url" placeholder="iCloud link or ID" required data-i18n-ph="icloud_url_placeholder">
-                <input type="text" name="token" placeholder="iCloud API token (if needed)" data-i18n-ph="token_placeholder">
+                <input type="text" name="token" placeholder="iCloud API token (if needed)" data-i18n-ph="icloud_token_placeholder">
                 <button type="submit" class="btn-main" disabled title="Not supported" data-i18n="import_icloud">Import iCloud</button>
             </form>
 
@@ -104,7 +106,7 @@
             <form action="{{ url_for('import_project_from_bitbucket') }}" method="post">
                 <label data-i18n="import_bitbucket_label">Import from Bitbucket:</label>
                 <input type="text" name="bitbucket_url" placeholder="Bitbucket repo URL" required data-i18n-ph="bitbucket_url_placeholder">
-                <input type="text" name="token" placeholder="Bitbucket API token (optional)" data-i18n-ph="token_placeholder">
+                <input type="text" name="token" placeholder="Bitbucket API token (optional)" data-i18n-ph="bitbucket_token_placeholder">
                 <button type="submit" class="btn-main" data-i18n="import_bitbucket">Import Bitbucket</button>
             </form>
 
@@ -112,7 +114,7 @@
             <form action="{{ url_for('import_project_from_gitlab') }}" method="post">
                 <label data-i18n="import_gitlab_label">Import from GitLab:</label>
                 <input type="text" name="gitlab_url" placeholder="GitLab repo URL" required data-i18n-ph="gitlab_url_placeholder">
-                <input type="text" name="token" placeholder="GitLab API token (optional)" data-i18n-ph="token_placeholder">
+                <input type="text" name="token" placeholder="GitLab API token (optional)" data-i18n-ph="gitlab_token_placeholder">
                 <button type="submit" class="btn-main" data-i18n="import_gitlab">Import GitLab</button>
             </form>
         </div>

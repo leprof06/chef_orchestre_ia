@@ -6,13 +6,14 @@ h1 { font-size: 2.1rem; margin-bottom: 0.8em; color: #253e67; font-weight: 600;}
 .btn-main { font-size: 1.13rem; font-weight: 500; border: none; outline: none; border-radius: 14px; padding: 1em 0; cursor: pointer; background: linear-gradient(90deg, #355C7D 0%, #6C5B7B 100%); color: #fff; transition: background 0.23s; box-shadow: 0 2px 12px rgba(60,80,150,0.06);}
 .btn-main:hover { background: linear-gradient(90deg, #6C5B7B 0%, #355C7D 100%);}
 .footer { margin-top: 2.3em; color: #889; font-size: 0.97em;}
+/* ========== Menu langue à gauche, DRY drapeaux, responsive ========== */
 #lang-switcher {
   position: absolute;
   top: 24px;
-  right: 32px;
+  left: 32px;
+  right: auto;
   z-index: 1000;
 }
-
 .lang-btn {
   background: #fff;
   color: #253262;
@@ -28,17 +29,15 @@ h1 { font-size: 2.1rem; margin-bottom: 0.8em; color: #253e67; font-weight: 600;}
   gap: 7px;
   transition: border 0.2s;
 }
-
 .lang-btn:hover,
 .lang-btn:focus {
   border-color: #4e5be7;
   outline: none;
 }
-
 .lang-list {
   display: none;
   position: absolute;
-  right: 0;
+  left: 0;
   background: #fff;
   margin-top: 6px;
   border-radius: 12px;
@@ -62,4 +61,11 @@ h1 { font-size: 2.1rem; margin-bottom: 0.8em; color: #253e67; font-weight: 600;}
 }
 #lang-switcher.open .lang-list {
   display: block;
+}
+/* Responsive : menu langue colle à gauche en petit écran */
+@media (max-width: 800px) {
+  #lang-switcher {
+    left: 14px !important;
+    top: 14px;
+  }
 }
