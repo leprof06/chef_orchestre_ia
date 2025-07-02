@@ -1,5 +1,5 @@
 # agents/routes/routes_project.py
-from flask import render_template, redirect, url_for, session, flash, request, jsonify
+from flask import render_template, redirect, url_for, session, flash, request, jsonify, current_app as app
 from werkzeug.utils import secure_filename
 import os
 from agents.utils.project_tools import (
@@ -83,27 +83,42 @@ def register_routes(app, orchestrator):
 
     @app.route("/upload_projet_existant", methods=["POST"])
     def upload_projet_existant():
+        # Vérification présence du fichier
         if "project_zip" not in request.files:
             flash("Aucun fichier fourni.")
             return redirect(url_for('projet_existant'))
+
         file = request.files["project_zip"]
         if file.filename == '':
             flash("Aucun fichier sélectionné.")
             return redirect(url_for('projet_existant'))
 
-        # → AJOUT : récupérer le nom du projet si fourni
-        nom_projet = request.form.get('project_name')
+        # Détection du nom du projet (champ formulaire ou nom du fichier zip)
+        nom_projet = request.form.get("project_name")
+        if not nom_projet:
+            nom_projet = os.path.splitext(secure_filename(file.filename))[0]  # nom du zip sans extension
+
+        # Vérification extension autorisée (.zip)
+        def allowed_file(filename):
+            return '.' in filename and filename.lower().endswith('.zip')
+
         if file and allowed_file(file.filename):
+            # Sauvegarde temporaire du zip uploadé
+            upload_folder = app.config.get('UPLOAD_FOLDER', 'uploads')
+            os.makedirs(upload_folder, exist_ok=True)
             filename = secure_filename(file.filename)
-            save_path = os.path.join(app.config.get('UPLOAD_FOLDER', 'uploads'), filename)
+            save_path = os.path.join(upload_folder, filename)
             file.save(save_path)
-            project_name = request.form.get('project_name')
-            ok = orchestrator.import_project_from_zip(save_path, project_name)
+
+            # Import du projet via Orchestrator
+            ok = orchestrator.import_project_from_zip(save_path, nom_projet)
             if ok:
                 flash("Projet importé avec succès.")
+                # REDIRECTION DIRECTE VERS LE CHAT DU PROJET
+                return redirect(url_for('chat_projet', project_name=nom_projet))
             else:
                 flash("Erreur lors de l'import du projet.")
-            return redirect(url_for('projet_existant'))
+                return redirect(url_for('projet_existant'))
         else:
             flash("Format de fichier non autorisé.")
             return redirect(url_for('projet_existant'))
