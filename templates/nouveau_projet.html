@@ -1,7 +1,21 @@
 <!-- templates/nouveau_projet.html -->
-<h2>Créer un nouveau projet</h2>
-<form method="post">
-    <input type="text" name="project_name" placeholder="Nom du projet" required>
-    <button type="submit">Créer</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title data-i18n="new_project">New Project</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/nouveau_project.css') }}">
-</form>
+</head>
+<body>
+    {% include "lang_menu.html" %}
+    <div class="container">
+        <h2 data-i18n="new_project">Create a new project</h2>
+        <form method="post">
+            <input type="text" name="project_name" placeholder="Project name" required data-i18n-ph="project_name_placeholder">
+            <button type="submit" data-i18n="create">Create</button>
+            <a href="{{ url_for('index') }}" class="button alt" data-i18n="back_home">Back to Home</a>
+        </form>
+    </div>
+    <script src="{{ url_for('static', filename='js/lang.js') }}"></script>
+</body>
+</html>

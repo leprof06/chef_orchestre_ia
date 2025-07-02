@@ -1,36 +1,40 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Chef d'Orchestre IA - Chat & Code</title>
+  <title data-i18n="chat_and_code">Orchestrator AI - Chat & Code</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
 </head>
 <body>
+  {% include "lang_menu.html" %}
   <div class="header">
     <div class="logo">
-      <i class="fa-solid fa-chess-king"></i> Chef d'Orchestre IA
+      <i class="fa-solid fa-chess-king"></i>
+      <span data-i18n="header_title">Orchestrator AI</span>
     </div>
     <div class="actions">
       <button class="btn" onclick="window.location.href='/select_project'">
-        <i class="fa fa-folder-open"></i> Ouvrir un projet
+        <i class="fa fa-folder-open"></i>
+        <span data-i18n="open_project">Open project</span>
       </button>
-      <button class="btn"><i class="fa fa-user-robot"></i> Profil IA</button>
+      <button class="btn">
+        <i class="fa fa-user-robot"></i>
+        <span data-i18n="ai_profile">AI Profile</span>
+      </button>
     </div>
   </div>
   <div class="main-layout">
     <aside class="sidebar">
       <div>
-        <h2><i class="fa fa-folder-tree"></i> Fichiers du projet</h2>
+        <h2><i class="fa fa-folder-tree"></i> <span data-i18n="project_files">Project files</span></h2>
         <div id="explorer"></div>
       </div>
       <div class="divider"></div>
       <div>
-        <h2><i class="fa fa-list-check"></i> Logs & étapes</h2>
-        <div class="log-list" id="log-list">
-          <!-- (optionnel, tu peux gérer dynamiquement) -->
-        </div>
+        <h2><i class="fa fa-list-check"></i> <span data-i18n="logs_steps">Logs & Steps</span></h2>
+        <div class="log-list" id="log-list"></div>
       </div>
     </aside>
     <main class="content">
@@ -40,7 +44,8 @@
           <span id="current-filename">{{ filename }}</span>
         </h2>
         <button class="btn" onclick="saveCode()">
-          <i class="fa fa-floppy-disk"></i> Enregistrer
+          <i class="fa fa-floppy-disk"></i>
+          <span data-i18n="save">Save</span>
         </button>
       </div>
       <div class="code-area">
@@ -51,7 +56,7 @@
           <div id="chat-messages"></div>
           <form id="chat-form" autocomplete="off" onsubmit="sendChat(event)">
             <div style="display: flex; gap: 10px; align-items: center; margin-top: 1rem;">
-              <input type="text" id="chat-input" placeholder="Pose ta question à l’IA sur ce fichier…" style="flex:1; padding: 0.5rem 1rem; border-radius: 1rem; border:1px solid #e3e9f3; font-size:1rem;">
+              <input type="text" id="chat-input" data-i18n-ph="ask_ai" placeholder="Ask the AI about this file..." style="flex:1; padding: 0.5rem 1rem; border-radius: 1rem; border:1px solid #e3e9f3; font-size:1rem;">
               <button type="submit" class="btn"><i class="fa fa-paper-plane"></i></button>
             </div>
           </form>
@@ -60,6 +65,7 @@
     </main>
   </div>
   <div id="notif"></div>
+  <script src="{{ url_for('static', filename='js/lang.js') }}"></script>
   <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
 </body>
 </html>

@@ -2,20 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Chef d'Orchestre IA - Home</title>
-   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <title data-i18n="header_title">Chef d'Orchestre IA - Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
+    {% include "lang_menu.html" %}
     <div class="container">
         <div class="card">
-            <h1>Chef d'Orchestre <span class="brand">IA</span></h1>
-            <p class="subtitle">
+            <h1 data-i18n="header_title">Chef d'Orchestre <span class="brand">IA</span></h1>
+            <p class="subtitle" data-i18n="welcome">
                 <strong>Orchestrate your projects with natural language!</strong><br>
                 Start a new project or resume an existing one.
             </p>
             <div class="actions">
-                <a class="button" href="{{ url_for('nouveau_projet') }}">New Project</a>
-                <a class="button alt" href="{{ url_for('projet_existant') }}">Existing Project</a>
+                <a class="button" href="{{ url_for('nouveau_projet') }}" data-i18n="new_project">New Project</a>
+                <a class="button alt" href="{{ url_for('projet_existant') }}" data-i18n="existing_project">Existing Project</a>
             </div>
             <footer>
                 <p class="author">Made by Yann & GPT-CodeAssistant.<br>
@@ -23,5 +24,6 @@
             </footer>
         </div>
     </div>
+    <script src="{{ url_for('static', filename='js/lang.js') }}"></script>
 </body>
 </html>

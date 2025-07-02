@@ -64,3 +64,30 @@ footer {
     color: #888;
     font-size: 0.97rem;
 }
+/* Ajoute dans static/css/main.css ou dans chaque CSS global */
+#lang-switcher {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  z-index: 1000;
+  /* Optionnel : fond blanc, arrondi, ombre légère */
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(30,40,70,0.08);
+  padding: 6px 14px;
+}
+
+.lang-select {
+  font-size: 1rem;
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+  padding: 4px 10px;
+  background: #f7f8fa;
+  color: #3a4252;
+  cursor: pointer;
+  transition: border 0.2s;
+}
+.lang-select:focus {
+  outline: none;
+  border-color: #7688e7;
+}

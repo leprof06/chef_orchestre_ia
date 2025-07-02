@@ -96,10 +96,89 @@ def register_routes(app, orchestrator):
             file.save(save_path)
             ok = orchestrator.init_from_zip(save_path)
             if ok:
-                flash("Projet importé et chargé avec succès.")
+                flash("Projet importé avec succès.")
             else:
-                flash("Erreur lors de l'import du ZIP.")
-            return redirect(url_for('chat_projet'))
-        else:
-            flash("Fichier non valide (format attendu : .zip)")
+                flash("Erreur lors de l'import du projet.")
             return redirect(url_for('projet_existant'))
+        else:
+            flash("Format de fichier non autorisé.")
+            return redirect(url_for('projet_existant'))
+
+    # ------------------ AJOUT DES ROUTES POUR L’EXPLORER/CODE EDITOR ------------------
+
+    def get_file_tree(root_path):
+        tree = []
+        try:
+            for entry in sorted(os.listdir(root_path)):
+                full_path = os.path.join(root_path, entry)
+                if os.path.isdir(full_path):
+                    tree.append({
+                        'type': 'folder',
+                        'name': entry,
+                        'open': False,
+                        'children': get_file_tree(full_path)
+                    })
+                else:
+                    tree.append({
+                        'type': 'file',
+                        'name': entry
+                    })
+        except Exception as e:
+            pass  # (log l’erreur en prod)
+        return tree
+
+    @app.route('/project_files')
+    def project_files():
+        project = request.args.get('project')
+        if not project or '/' in project or '..' in project:
+            return jsonify(success=False, message="Projet invalide.")
+
+        root_path = os.path.join('projets', project)
+        if not os.path.isdir(root_path):
+            return jsonify(success=False, message="Projet introuvable.")
+
+        tree = get_file_tree(root_path)
+        return jsonify(success=True, tree=tree)
+
+    @app.route('/load_file')
+    def load_file():
+        project = request.args.get('project')
+        filename = request.args.get('filename')
+        if not project or not filename or '/' in project or '..' in project or '..' in filename:
+            return jsonify(success=False, message="Paramètres invalides.")
+
+        file_path = os.path.join('projets', project, filename.lstrip('/'))
+        if not os.path.isfile(file_path):
+            return jsonify(success=False, message="Fichier introuvable.")
+
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                code = f.read()
+            return jsonify(success=True, code=code)
+        except Exception as e:
+            return jsonify(success=False, message=f"Erreur lecture: {str(e)}")
+
+    @app.route('/save_code', methods=['POST'])
+    def save_code():
+        data = request.get_json()
+        code = data.get('code')
+        project = data.get('project')
+        filename = data.get('filename')
+
+        # Sécurité de base
+        if not project or not filename or '/' in project or '..' in project or '..' in filename:
+            return jsonify(success=False, message="Projet ou fichier non valide."), 400
+
+        project_dir = os.path.join('projets', project)
+        file_path = os.path.join(project_dir, filename)
+
+        try:
+            os.makedirs(project_dir, exist_ok=True)
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(code)
+            return jsonify(success=True, message="Code enregistré avec succès.")
+        except Exception as e:
+            return jsonify(success=False, message=f"Erreur lors de la sauvegarde : {str(e)}"), 500
+
+    # ------------------------------------------------------------------------
+
