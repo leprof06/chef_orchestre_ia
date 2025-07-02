@@ -2,32 +2,46 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title data-i18n="select_project_title">Select a Project</title>
+  <title data-i18n="select_project_title">Sélection d’un projet</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body>
+  <!-- Langue switcher aligné avec les autres pages -->
   <div class="lang-switcher" style="position: fixed; top: 30px; left: 24px; z-index:10;">
     {% include "lang_menu.html" %}
   </div>
-  <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh;">
-    <h1><i class="fa fa-folder-open"></i> <span data-i18n="select_project">Select a Project</span></h1>
-    <p style="font-size:1.1em; color:#555;" data-i18n="select_project_intro">
-      Here you will be able to select or create a new project.
-    </p>
-    <!-- Exemple de liste de projets à venir -->
-    <div style="margin:2rem 0;">
-      <button class="btn" style="margin-right:1rem;">
-        <i class="fa fa-plus"></i> <span data-i18n="create_project">Create a new project</span>
-      </button>
-      <button class="btn btn-secondary">
-        <i class="fa fa-list"></i> <span data-i18n="list_projects">See existing projects</span>
+
+  <header class="main-header" style="display:flex; align-items:center; justify-content:space-between; padding:20px 40px 10px 100px;">
+    <div class="logo-title" style="font-size:1.5rem;">
+      <i class="fa-solid fa-chess-king"></i> Chef d'Orchestre IA
+    </div>
+    <div class="header-actions" style="display:flex; gap:10px;">
+      <button class="btn" onclick="window.location.href='/chat_projet'">
+        <i class="fa fa-comments"></i> <span data-i18n="back_to_chat">Retour chat</span>
       </button>
     </div>
-    <a href="/" style="margin-top:2rem; color:#345ad1;"><i class="fa fa-arrow-left"></i> <span data-i18n="back">Back</span></a>
-  </div>
+  </header>
+
+  <main style="max-width:600px;margin:60px auto 0 auto;background:#fff;border-radius:2rem;box-shadow:0 6px 32px #0001;padding:2rem;">
+    <h2 style="text-align:center;margin-bottom:2rem;">
+      <i class="fa fa-folder-open"></i>
+      <span data-i18n="select_project">Sélectionner un projet</span>
+    </h2>
+    <!-- À remplacer par ta logique de listing -->
+    <div style="text-align:center;">
+      <button class="btn" onclick="window.location.href='/nouveau_projet'">
+        <i class="fa fa-plus"></i> <span data-i18n="new_project">Nouveau projet</span>
+      </button>
+      <button class="btn" onclick="window.location.href='/import_project'">
+        <i class="fa fa-upload"></i> <span data-i18n="import_project">Importer projet</span>
+      </button>
+    </div>
+    <!-- Zone de listing dynamique ici si besoin -->
+  </main>
+
   <script src="{{ url_for('static', filename='js/lang.js') }}"></script>
 </body>
 </html>

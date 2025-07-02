@@ -164,7 +164,7 @@ def register_routes(app, orchestrator):
         code = data.get('code')
         project = data.get('project')
         filename = data.get('filename')
-
+    
         # Sécurité de base
         if not project or not filename or '/' in project or '..' in project or '..' in filename:
             return jsonify(success=False, message="Projet ou fichier non valide."), 400
@@ -180,5 +180,12 @@ def register_routes(app, orchestrator):
         except Exception as e:
             return jsonify(success=False, message=f"Erreur lors de la sauvegarde : {str(e)}"), 500
 
-    # ------------------------------------------------------------------------
+# --- Ajout de la route pour sélectionner un projet ---
 
+def register_project_routes(app, orchestrator):
+    # ... (autres routes existantes) ...
+
+    @app.route('/select_project')
+    def select_project():
+        # Ici tu pourras rajouter des données à passer à la page plus tard
+        return render_template('select_project.html')
