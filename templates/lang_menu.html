@@ -1,9 +1,13 @@
 <!-- templates/lang_menu.html -->
 <div id="lang-switcher" class="lang-dropdown">
-  <select id="select-lang" class="lang-select">
-    <option value="en">EN</option>
-    <option value="fr">FR</option>
-    <option value="de">DE</option>
-    <option value="zh">中文</option>
-  </select>
+  <button id="lang-btn" class="lang-btn">
+    <span id="lang-current">🌐 EN</span>
+    <i class="fa fa-caret-down"></i>
+  </button>
+  <ul id="lang-list" class="lang-list">
+    <li data-lang="en"><span>🇬🇧</span> English</li>
+    <li data-lang="fr"><span>🇫🇷</span> Français</li>
+    <li data-lang="de"><span>🇩🇪</span> Deutsch</li>
+    <li data-lang="zh"><span>🇨🇳</span> 中文</li>
+  </ul>
 </div>

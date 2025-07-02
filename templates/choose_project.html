@@ -124,7 +124,7 @@
             <div class="projets-titre" data-i18n="your_existing_projects">Your existing projects:</div>
             {% if projects %}
                 {% for project in projects %}
-                    <form action="{{ url_for('load_project', project_name=project) }}" method="get" style="display:inline;">
+                    <form action="{{ url_for('load_project_route', project_name=project) }}" method="get" style="display:inline;">
                         <button class="project-btn" type="submit">{{ project }}</button>
                     </form>
                 {% endfor %}
