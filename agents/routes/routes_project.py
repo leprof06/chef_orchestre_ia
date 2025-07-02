@@ -90,11 +90,15 @@ def register_routes(app, orchestrator):
         if file.filename == '':
             flash("Aucun fichier sélectionné.")
             return redirect(url_for('projet_existant'))
+
+        # → AJOUT : récupérer le nom du projet si fourni
+        nom_projet = request.form.get('project_name')
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             save_path = os.path.join(app.config.get('UPLOAD_FOLDER', 'uploads'), filename)
             file.save(save_path)
-            ok = orchestrator.init_from_zip(save_path)
+            project_name = request.form.get('project_name')
+            ok = orchestrator.import_project_from_zip(save_path, project_name)
             if ok:
                 flash("Projet importé avec succès.")
             else:
@@ -103,6 +107,7 @@ def register_routes(app, orchestrator):
         else:
             flash("Format de fichier non autorisé.")
             return redirect(url_for('projet_existant'))
+
 
     # ------------------ AJOUT DES ROUTES POUR L’EXPLORER/CODE EDITOR ------------------
 

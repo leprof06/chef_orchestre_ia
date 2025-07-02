@@ -28,8 +28,10 @@
             <form action="{{ url_for('upload_projet_existant') }}" method="post" enctype="multipart/form-data">
                 <label data-i18n="import_zip_label">Import project ZIP:</label>
                 <input type="file" name="project_zip" accept=".zip" required>
+                <input type="text" name="project_name" placeholder="Project name (optional)" style="margin-left:1em;" data-i18n-ph="project_name_placeholder">
                 <button type="submit" class="btn-main" data-i18n="import_zip">Import ZIP</button>
             </form>
+
 
             <!-- Import local folder by path -->
             <form action="{{ url_for('import_project_from_local_folder') }}" method="post">
