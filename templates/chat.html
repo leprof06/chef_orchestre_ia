@@ -1,66 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Chef d'Orchestre IA – Project</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chef d'Orchestre IA - Chat & Code</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
 </head>
 <body>
-<div class="container">
-    <!-- Left column: logs/steps -->
-    <div class="panel-left">
-        <h2>Steps & Logs</h2>
-        <div id="logs-output"></div>
-        {% if show_analyse_btn %}
-            <form id="analyse-form" action="/analyser" method="post">
-                <button type="submit" class="analyse-btn">Analyze project</button>
-            </form>
-        {% endif %}
+  <div class="header">
+    <div class="logo">
+      <i class="fa-solid fa-chess-king"></i> Chef d'Orchestre IA
     </div>
-    <!-- Right column: code zone + chat -->
-    <div class="panel-right">
-        <h3>Code Area</h3>
-        <textarea id="code-editor" spellcheck="false">{% if code %}{{ code }}{% else %}# Project code will appear here...{% endif %}</textarea>
-        <form class="chat-form" id="chat-form">
-            <input type="text" id="input-message" placeholder="Describe what you want to do…" autocomplete="off" />
-            <button type="submit">Send</button>
-        </form>
+    <div class="actions">
+      <button class="btn" onclick="window.location.href='/select_project'">
+        <i class="fa fa-folder-open"></i> Ouvrir un projet
+      </button>
+      <button class="btn"><i class="fa fa-user-robot"></i> Profil IA</button>
     </div>
-</div>
-<script>
-function afficherLog(data) {
-    let out = "";
-    if (data.answer) out = data.answer;
-    else if (data.logs) out = data.logs;
-    else out = JSON.stringify(data, null, 2);
-    document.getElementById("logs-output").textContent = out;
-}
-
-document.getElementById("chat-form").onsubmit = function(e) {
-    e.preventDefault();
-    fetch('/api/chat', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        message: document.getElementById("input-message").value
-      })
-    })
-    .then(r => r.json())
-    .then(afficherLog)
-    .catch(err => { document.getElementById("logs-output").textContent = "Network error: " + err; });
-    document.getElementById("input-message").value = "";
-};
-
-const analyseForm = document.getElementById("analyse-form");
-if(analyseForm){
-    analyseForm.onsubmit = function(e){
-        e.preventDefault();
-        fetch("/analyser", {method: "POST"})
-        .then(r => r.json())
-        .then(afficherLog)
-        .catch(err => { document.getElementById("logs-output").textContent = "Analyse error: " + err; });
-    }
-}
-</script>
+  </div>
+  <div class="main-layout">
+    <aside class="sidebar">
+      <div>
+        <h2><i class="fa fa-folder-tree"></i> Fichiers du projet</h2>
+        <div id="explorer"></div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <h2><i class="fa fa-list-check"></i> Logs & étapes</h2>
+        <div class="log-list" id="log-list">
+          <!-- (optionnel, tu peux gérer dynamiquement) -->
+        </div>
+      </div>
+    </aside>
+    <main class="content">
+      <div class="code-header">
+        <h2>
+          <i class="fa fa-file-code"></i>
+          <span id="current-filename">{{ filename }}</span>
+        </h2>
+        <button class="btn" onclick="saveCode()">
+          <i class="fa fa-floppy-disk"></i> Enregistrer
+        </button>
+      </div>
+      <div class="code-area">
+        <input type="hidden" id="project" value="{{ project_name }}">
+        <input type="hidden" id="filename" value="{{ filename }}">
+        <textarea class="editable-code" id="code-area" spellcheck="false" autocapitalize="off" autocomplete="off">{{ code_content }}</textarea>
+        <div class="chat-zone" id="chat-zone">
+          <div id="chat-messages"></div>
+          <form id="chat-form" autocomplete="off" onsubmit="sendChat(event)">
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 1rem;">
+              <input type="text" id="chat-input" placeholder="Pose ta question à l’IA sur ce fichier…" style="flex:1; padding: 0.5rem 1rem; border-radius: 1rem; border:1px solid #e3e9f3; font-size:1rem;">
+              <button type="submit" class="btn"><i class="fa fa-paper-plane"></i></button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+  <div id="notif"></div>
+  <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
 </body>
 </html>
