@@ -19,8 +19,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 register_project_routes(app, orchestrator)
 register_import_routes(app, orchestrator)
 register_chat_routes(app, orchestrator)
-register_misc_routes(app, orchestrator)
-register_project_routes(app, orchestrator)  
+register_misc_routes(app, orchestrator) 
 
 if __name__ == "__main__":
     app.run(debug=True)
