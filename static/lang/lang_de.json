@@ -61,5 +61,13 @@
   "save": "Speichern",
   "edit_file": "Datei bearbeiten",
   "ask_ai": "Stellen Sie der KI eine Frage zu dieser Datei...",
-  "send": "Senden"
+  "send": "Senden",
+  "index_title": "Chef d'Orchestre IA - Startseite",
+  "index_headline": "Chef d'Orchestre",
+  "index_slogan": "Orchestriere deine Projekte mit natürlicher Sprache!",
+  "index_subtitle": "Starte ein neues Projekt oder fahre mit einem bestehenden fort.",
+  "index_new_project": "Neues Projekt",
+  "index_existing_project": "Bestehendes Projekt",
+  "index_author": "Erstellt von Yann & GPT-CodeAssistant.",
+  "index_footer": "Modularer Orchestrator AI © 2025"
 }

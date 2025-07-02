@@ -61,5 +61,13 @@
   "save": "Save",
   "edit_file": "Edit file",
   "ask_ai": "Ask the AI about this file...",
-  "send": "Send"
+  "send": "Send",
+  "index_title": "Chef d'Orchestre IA - Home",
+  "index_headline": "Chef d'Orchestre",
+  "index_slogan": "Orchestrate your projects with natural language!",
+  "index_subtitle": "Start a new project or resume an existing one.",
+  "index_new_project": "New Project",
+  "index_existing_project": "Existing Project",
+  "index_author": "Made by Yann & GPT-CodeAssistant.",
+  "index_footer": "Modular Orchestrator AI © 2025"
 }

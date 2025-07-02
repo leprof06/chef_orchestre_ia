@@ -61,5 +61,13 @@
   "save": "Enregistrer",
   "edit_file": "Éditer le fichier",
   "ask_ai": "Posez une question à l’IA sur ce fichier…",
-  "send": "Envoyer"
+  "send": "Envoyer",
+  "index_title": "Chef d'Orchestre IA - Accueil",
+  "index_headline": "Chef d'Orchestre",
+  "index_slogan": "Orchestrez vos projets en langage naturel !",
+  "index_subtitle": "Démarrez un nouveau projet ou reprenez-en un existant.",
+  "index_new_project": "Nouveau projet",
+  "index_existing_project": "Projet existant",
+  "index_author": "Réalisé par Yann & GPT-CodeAssistant.",
+  "index_footer": "Orchestrateur IA modulaire © 2025"
 }

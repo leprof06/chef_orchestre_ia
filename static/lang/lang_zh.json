@@ -61,5 +61,13 @@
   "save": "保存",
   "edit_file": "编辑文件",
   "ask_ai": "向AI提问关于此文件...",
-  "send": "发送"
+  "send": "发送",
+  "index_title": "Chef d'Orchestre IA - 首页",
+  "index_headline": "Chef d'Orchestre",
+  "index_slogan": "用自然语言编排你的项目！",
+  "index_subtitle": "开始一个新项目或继续已有项目。",
+  "index_new_project": "新项目",
+  "index_existing_project": "已有项目",
+  "index_author": "由 Yann & GPT-CodeAssistant 制作。",
+  "index_footer": "模块化指挥家AI © 2025"
 }

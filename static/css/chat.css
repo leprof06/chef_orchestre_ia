@@ -327,3 +327,35 @@ body {
     top: 14px;
   }
 }
+.button, .btn-main, .btn {
+  background: var(--primary, #3959e7);
+  color: #fff;
+  border: none;
+  border-radius: 1.5rem;
+  padding: 0.65rem 1.5rem;
+  font-weight: 600;
+  font-size: 1.04rem;
+  box-shadow: 0 1px 8px #e0e6f7;
+  cursor: pointer;
+  transition: background 0.16s, transform 0.13s;
+  margin: 0.3rem 0.2rem;
+  outline: none;
+  display: inline-block;
+}
+
+.button:hover, .btn-main:hover, .btn:hover {
+  background: var(--primary-dark, #27379c);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 16px #dae1fd;
+}
+
+.button.alt, .btn-main.alt {
+  background: #38ad4b;
+}
+
+.button.alt:hover, .btn-main.alt:hover {
+  background: #267b32;
+}
+a.button, a.btn-main, a.btn {
+  text-decoration: none !important;
+}
