@@ -64,40 +64,15 @@ footer {
     color: #888;
     font-size: 0.97rem;
 }
-/* Ajoute dans static/css/main.css ou dans chaque CSS global */
-#lang-switcher {
-  position: absolute;
-  top: 20px;
-  right: 30px;
-  z-index: 1000;
-  /* Optionnel : fond blanc, arrondi, ombre légère */
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(30,40,70,0.08);
-  padding: 6px 14px;
-}
 
-.lang-select {
-  font-size: 1rem;
-  border: 1px solid #e1e1e1;
-  border-radius: 8px;
-  padding: 4px 10px;
-  background: #f7f8fa;
-  color: #3a4252;
-  cursor: pointer;
-  transition: border 0.2s;
-}
-.lang-select:focus {
-  outline: none;
-  border-color: #7688e7;
-}
+/* ========== Menu langue à gauche, DRY drapeaux, responsive ========== */
 #lang-switcher {
   position: absolute;
   top: 24px;
-  right: 32px;
+  left: 32px;
+  right: auto;
   z-index: 1000;
 }
-
 .lang-btn {
   background: #fff;
   color: #253262;
@@ -113,17 +88,15 @@ footer {
   gap: 7px;
   transition: border 0.2s;
 }
-
 .lang-btn:hover,
 .lang-btn:focus {
   border-color: #4e5be7;
   outline: none;
 }
-
 .lang-list {
   display: none;
   position: absolute;
-  right: 0;
+  left: 0;
   background: #fff;
   margin-top: 6px;
   border-radius: 12px;
@@ -147,4 +120,11 @@ footer {
 }
 #lang-switcher.open .lang-list {
   display: block;
+}
+/* Responsive : menu langue colle à gauche en petit écran */
+@media (max-width: 800px) {
+  #lang-switcher {
+    left: 14px !important;
+    top: 14px;
+  }
 }
