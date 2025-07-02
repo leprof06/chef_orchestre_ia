@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title data-i18n="select_project_title">Select a Project</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
+  <div class="lang-switcher" style="position: fixed; top: 30px; left: 24px; z-index:10;">
+    {% include "lang_menu.html" %}
+  </div>
+  <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh;">
+    <h1><i class="fa fa-folder-open"></i> <span data-i18n="select_project">Select a Project</span></h1>
+    <p style="font-size:1.1em; color:#555;" data-i18n="select_project_intro">
+      Here you will be able to select or create a new project.
+    </p>
+    <!-- Exemple de liste de projets à venir -->
+    <div style="margin:2rem 0;">
+      <button class="btn" style="margin-right:1rem;">
+        <i class="fa fa-plus"></i> <span data-i18n="create_project">Create a new project</span>
+      </button>
+      <button class="btn btn-secondary">
+        <i class="fa fa-list"></i> <span data-i18n="list_projects">See existing projects</span>
+      </button>
+    </div>
+    <a href="/" style="margin-top:2rem; color:#345ad1;"><i class="fa fa-arrow-left"></i> <span data-i18n="back">Back</span></a>
+  </div>
+  <script src="{{ url_for('static', filename='js/lang.js') }}"></script>
+</body>
+</html>

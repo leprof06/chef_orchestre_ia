@@ -9,32 +9,39 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
-  <div class="header">
-    <div class="logo">
-      <i class="fa-solid fa-chess-king"></i> Chef d'Orchestre IA
+  <!-- Bouton langue placé à gauche et descendu -->
+  <div class="lang-switcher" style="position: fixed; top: 60px; left: 24px; z-index:10;">
+    {% include "lang_menu.html" %}
+  </div>
+  <header class="main-header" style="display:flex; align-items:center; justify-content:space-between; padding:20px 40px 10px 100px;">
+    <div class="logo-title" style="font-size:1.5rem;">
+      <i class="fa-solid fa-chess-king"></i> <span data-i18n="app_title">Chef d'Orchestre IA</span>
     </div>
-    <div class="actions">
+    <div class="header-actions" style="display:flex; gap:10px;">
       <button class="btn" onclick="window.location.href='/select_project'">
         <i class="fa fa-folder-open"></i> <span data-i18n="open_project">Open project</span>
       </button>
-      <button class="btn"><i class="fa fa-user-robot"></i> <span data-i18n="ai_profile">AI Profile</span></button>
+      <button class="btn" onclick="window.location.href='/ai_profile'">
+        <i class="fa fa-user-robot"></i> <span data-i18n="ai_profile">AI Profile</span>
+      </button>
     </div>
-  </div>
-  <div class="main-layout">
-    <aside class="sidebar">
+  </header>
+  <div class="main-layout" style="display:flex; height:calc(100vh - 80px);">
+    <aside class="sidebar" style="width:280px; background:#fff; border-radius:2rem; margin:16px; padding:32px 12px;">
       <div>
         <h2><i class="fa fa-folder-tree"></i> <span data-i18n="project_files">Project Files</span></h2>
+        <div id="explorer-error" style="color:#e33; font-size:1rem;">Impossible de charger l'explorer.</div>
         <div id="explorer"></div>
       </div>
-      <div class="divider"></div>
+      <div class="divider" style="margin:1.5rem 0; border-bottom:1px solid #e5e5e5;"></div>
       <div>
-        <h2><i class="fa fa-list-check"></i> <span data-i18n="logs_steps">Logs & steps</span></h2>
+        <h2><i class="fa fa-list-check"></i> <span data-i18n="logs_steps">Logs & Steps</span></h2>
         <div class="log-list" id="log-list"></div>
       </div>
     </aside>
-    <main class="content">
-      <div class="code-header">
-        <h2>
+    <main class="content" style="flex:1; padding:16px 24px 0 0; display:flex; flex-direction:column;">
+      <div class="code-header" style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+        <h2 style="margin:0; font-size:1.25rem;">
           <i class="fa fa-file-code"></i>
           <span id="current-filename">{{ filename }}</span>
         </h2>
@@ -42,17 +49,15 @@
           <i class="fa fa-floppy-disk"></i> <span data-i18n="save">Save</span>
         </button>
       </div>
-      <div class="code-area">
+      <div class="code-area" style="flex:1; display:flex; flex-direction:column;">
         <input type="hidden" id="project" value="{{ project_name }}">
         <input type="hidden" id="filename" value="{{ filename }}">
-        <textarea class="editable-code" id="code-area" spellcheck="false" autocapitalize="off" autocomplete="off">{{ code_content }}</textarea>
-        <div class="chat-zone" id="chat-zone">
-          <div id="chat-messages"></div>
-          <form id="chat-form" autocomplete="off" onsubmit="sendChat(event)">
-            <div style="display: flex; gap: 10px; align-items: center; margin-top: 1rem;">
-              <input type="text" id="chat-input" placeholder="Ask the AI about this file…" style="flex:1; padding: 0.5rem 1rem; border-radius: 1rem; border:1px solid #e3e9f3; font-size:1rem;" data-i18n-ph="chat_input_placeholder">
-              <button type="submit" class="btn"><i class="fa fa-paper-plane"></i></button>
-            </div>
+        <textarea class="editable-code" id="code-area" spellcheck="false" autocapitalize="off" autocomplete="off" style="width:100%; height:350px; font-family:monospace; border-radius:1rem; border:1px solid #e3e9f3; background:#232c37; color:#fff; font-size:1.1rem; margin-bottom:10px;">{{ code_content }}</textarea>
+        <div class="chat-zone" id="chat-zone" style="background:#fff; border-radius:1rem; border:1px solid #e3e9f3; margin-top:8px;">
+          <div id="chat-messages" style="padding:12px; min-height:90px;"></div>
+          <form id="chat-form" autocomplete="off" onsubmit="sendChat(event)" style="display:flex; gap:10px; align-items:center; margin:12px;">
+            <input type="text" id="chat-input" placeholder="Ask the AI about this file…" style="flex:1; padding:0.5rem 1rem; border-radius:1rem; border:1px solid #e3e9f3; font-size:1rem;" data-i18n-ph="chat_input_placeholder">
+            <button type="submit" class="btn"><i class="fa fa-paper-plane"></i></button>
           </form>
         </div>
       </div>
